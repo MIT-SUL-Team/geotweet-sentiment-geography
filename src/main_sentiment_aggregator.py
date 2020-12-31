@@ -22,10 +22,7 @@ def run_aggregation(args):
     for i in tqdm(dates):
         temp = aggregate_sentiment(i, args)
         df = pd.concat([df, temp])
-
-    df.to_csv('data/aggregate_sentiment/{}_{}_{}.tsv'.format(args.sentiment_method, args.country.lower(), args.geo_level), sep='\t', index=False)
-
-    return df
+        df.to_csv('data/aggregate_sentiment/{}_{}_{}.tsv'.format(args.sentiment_method, args.country.lower(), args.geo_level), sep='\t', index=False)
 
 if __name__ == '__main__':
 
