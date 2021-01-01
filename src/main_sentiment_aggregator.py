@@ -2,27 +2,20 @@
 
 import pandas as pd
 import numpy as np
-import glob
-import os.path
 import argparse
-import sys
-from datetime import date, timedelta
 from tqdm.auto import tqdm
 
-from utils.aggregation_utils import aggregate_sentiment
+from utils.aggregation_utils import check_args, get_dates, aggregate_sentiment, save_df
 
 def run_aggregation(args):
 
-    start_date = date(int(args.start_date[:4]), int(args.start_date[5:7]), int(args.start_date[8:]))
-    end_date = date(int(args.end_date[:4]), int(args.end_date[5:7]), int(args.end_date[8:]))
-
-    dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days +1)]
+    check_args(args)
 
     df = pd.DataFrame()
-    for i in tqdm(dates):
+    for i in tqdm(get_dates(args)):
         temp = aggregate_sentiment(i, args)
         df = pd.concat([df, temp])
-        df.to_csv('data/aggregate_sentiment/{}_{}_{}.tsv'.format(args.sentiment_method, args.country.lower(), args.geo_level), sep='\t', index=False)
+        save_df(df, args)
 
 if __name__ == '__main__':
 
@@ -34,6 +27,9 @@ if __name__ == '__main__':
     parser.add_argument('--by_ind', default=True, type=bool, help='Individual agg or tweet agg?')
     parser.add_argument('--start_date', default='2019-01-01', type=str, help='Start date')
     parser.add_argument('--end_date', default='2020-09-30', type=str, help='End date')
+    parser.add_argument('--keywords', nargs='*', default='', help='Which keywords do you want to subset to?')
+    parser.add_argument('--text_field', default='tweet_text_stemmed', help='Which text field to use for keyword matching?')
+    parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
 
     print("\nRunning for {}".format(args.country))
