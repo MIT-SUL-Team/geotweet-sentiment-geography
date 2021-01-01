@@ -10,6 +10,11 @@ def check_args(args):
     if len(args.keywords)>0 and args.name_ext == '':
         raise ValueError("Must provide a name extension (--name_ext) when subsetting by keywords")
 
+    if len(args.name_ext)>0 and args.name_ext[0]!='_':
+        args.name_ext = "_" + args.name_ext
+
+    return args
+
 def get_dates(args):
 
     start_date = date(int(args.start_date[:4]), int(args.start_date[5:7]), int(args.start_date[8:]))
@@ -32,13 +37,13 @@ def aggregate_sentiment(date, args):
         print("No sentiment data for {}.".format(date))
         return pd.DataFrame()
 
-    scores = scores[scores['score'].notnull()].reset_index()
-    tweets = tweets[tweets['country']==args.country].reset_index()
+    scores = scores[scores['score'].notnull()].reset_index(drop=True)
+    tweets = tweets[tweets['country']==args.country].reset_index(drop=True)
 
     if len(args.keywords)>0:
         regex = '|'.join(args.keywords)
-        tweets = tweets[tweets[args.text_field].notnull()].reset_index()
-        tweets = tweets[tweets[args.text_field].str.contains(regex)].reset_index()
+        tweets = tweets[tweets[args.text_field].notnull()].reset_index(drop=True)
+        tweets = tweets[tweets[args.text_field].str.contains(regex)].reset_index(drop=True)
 
     df = pd.merge(tweets, scores, how='inner', on='tweet_id')
     del scores, tweets
@@ -61,15 +66,15 @@ def aggregate_sentiment(date, args):
     df = df.groupby(gb_vars)
     df = pd.DataFrame({
         'ind_count': df['score'].count(),
-        'count_robust': by_ind['score_robust'].count(),
+        'count_robust': df['score_robust'].count(),
         'score': df['score'].mean(),
         'score_10q': df['score'].quantile(0.1),
         'score_50q': df['score'].quantile(0.5),
         'score_90q': df['score'].quantile(0.9),
-        'score_robust': by_ind['score_robust'].mean(),
-        'score_robust_10q': by_ind['score_robust'].quantile(0.1),
-        'score_robust_50q': by_ind['score_robust'].quantile(0.5),
-        'score_robust_90q': by_ind['score_robust'].quantile(0.9),
+        'score_robust': df['score_robust'].mean(),
+        'score_robust_10q': df['score_robust'].quantile(0.1),
+        'score_robust_50q': df['score_robust'].quantile(0.5),
+        'score_robust_90q': df['score_robust'].quantile(0.9),
     }).reset_index()
 
     df['date'] = date
@@ -77,6 +82,7 @@ def aggregate_sentiment(date, args):
     return df
 
 def save_df(df, args):
+
     df.to_csv('data/aggregate_sentiment/{}_{}_{}{}.tsv'.format(
         args.country.lower(),
         args.geo_level,

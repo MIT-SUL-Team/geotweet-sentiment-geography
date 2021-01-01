@@ -9,7 +9,7 @@ from utils.aggregation_utils import check_args, get_dates, aggregate_sentiment, 
 
 def run_aggregation(args):
 
-    check_args(args)
+    args = check_args(args)
 
     df = pd.DataFrame()
     for i in tqdm(get_dates(args)):
