@@ -35,8 +35,10 @@ def aggregate_sentiment(date, args):
     scores = scores[scores['score'].notnull()].reset_index()
     tweets = tweets[tweets['country']==args.country].reset_index()
 
-    for keyword in args.keywords:
-        tweets = tweets[tweets[args.text_field].str.contains(keyword)]
+    if len(args.keywords)>0:
+        regex = '|'.join(args.keywords)
+        tweets = tweets[tweets[args.text_field].notnull()].reset_index()
+        tweets = tweets[tweets[args.text_field].str.contains(regex)].reset_index()
 
     df = pd.merge(tweets, scores, how='inner', on='tweet_id')
     del scores, tweets
