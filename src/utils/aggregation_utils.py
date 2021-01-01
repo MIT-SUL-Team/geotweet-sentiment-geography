@@ -8,7 +8,7 @@ from datetime import date, timedelta
 def check_args(args):
 
     if len(args.keywords)>0 and args.name_ext == '':
-        raise ValueError("Must provide a name extension when subsetting by keywords")
+        raise ValueError("Must provide a name extension (--name_ext) when subsetting by keywords")
 
 def get_dates(args):
 
@@ -36,7 +36,7 @@ def aggregate_sentiment(date, args):
     tweets = tweets[tweets['country']==args.country].reset_index()
 
     for keyword in args.keywords:
-        tweets = tweets[tweets[args.text_var].str.contains(keyword)]
+        tweets = tweets[tweets[args.text_field].str.contains(keyword)]
 
     df = pd.merge(tweets, scores, how='inner', on='tweet_id')
     del scores, tweets
@@ -89,5 +89,5 @@ def save_df(df, args):
             args.sentiment_method,
             args.name_ext
         ), "w")
-        f.write('Subset based on keywords {} in {} field.'.format(args.keywords, args.text_var))
+        f.write('Subset based on keywords {} in {} field.'.format(args.keywords, args.text_field))
         f.close()
