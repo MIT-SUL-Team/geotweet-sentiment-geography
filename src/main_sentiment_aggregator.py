@@ -1,4 +1,4 @@
-#usage: python3 src/main_sentiment_aggregator.py US --data_path /home/sentiment/data_lake/twitter/processed/
+#usage: python3 src/main_sentiment_aggregator.py USA --tweet_text_path /home/sentiment/data_lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo
 
 import pandas as pd
 import numpy as np
@@ -20,14 +20,18 @@ def run_aggregation(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('country', help='Country abbreviation')
-    parser.add_argument('--data_path', default='', type=str, help='path to tweet data')
+    parser.add_argument('country', help='Country abbreviation (3 letter)')
+    parser.add_argument('--tweet_text_path', default='', type=str, help='path to tweet text data')
+    parser.add_argument('--tweet_geo_path', default='', type=str, help='path to tweet geography data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
     parser.add_argument('--geo_level', default='admin1', type=str, help='level of geo granularity')
-    parser.add_argument('--by_ind', default=True, type=bool, help='Individual agg or tweet agg?')
+    parser.add_argument('--ind_level', default=False, type=bool, help='Would you like the data aggregated at individual level?  (produces large files)')
+    parser.add_argument('--ind_normed', default=True, type=bool, help='Would you like to include the individual-normed aggregation?')
+    parser.add_argument('--ind_robust_threshold', default=3, type=int, help='How many tweets for an individual to be considered robust?')
     parser.add_argument('--start_date', default='2019-01-01', type=str, help='Start date')
     parser.add_argument('--end_date', default='2020-09-30', type=str, help='End date')
-    parser.add_argument('--keywords', nargs='*', default='', help='Which keywords do you want to subset to (can be regex expressions)?')
+    parser.add_argument('--incl_keywords', nargs='*', default='', help='Which keywords do you want to include in the subset?')
+    parser.add_argument('--excl_keywords', nargs='*', default='', help='Which keywords do you want to exclude in the subset?')
     parser.add_argument('--text_field', default='tweet_text_stemmed', help='Which text field to use for keyword matching?')
     parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
@@ -35,3 +39,5 @@ if __name__ == '__main__':
     print("\nRunning for {}".format(args.country))
 
     run_aggregation(args)
+
+# TO DO: implement include keywords and exclude keywords
