@@ -30,7 +30,7 @@ def get_dates(args):
     return dates
 
 def groupby(df, gb_vars, prefix=''):
-    df = df.groupby(vars)
+    df = df.groupby(gb_vars)
     df = pd.DataFrame({
         prefix+'count': df['score'].count(),
         prefix+'score': df['score'].mean(),
