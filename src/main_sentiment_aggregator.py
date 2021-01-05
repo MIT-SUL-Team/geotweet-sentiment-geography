@@ -29,10 +29,10 @@ if __name__ == '__main__':
     parser.add_argument('--ind_normed', default=True, type=bool, help='Would you like to include the individual-normed aggregation?')
     parser.add_argument('--ind_robust_threshold', default=3, type=int, help='How many tweets for an individual to be considered robust?')
     parser.add_argument('--start_date', default='2019-01-01', type=str, help='Start date')
-    parser.add_argument('--end_date', default='2020-09-30', type=str, help='End date')
+    parser.add_argument('--end_date', default='2020-06-30', type=str, help='End date')
     parser.add_argument('--incl_keywords', nargs='*', default='', help='Which keywords do you want to include in the subset?')
     parser.add_argument('--excl_keywords', nargs='*', default='', help='Which keywords do you want to exclude in the subset?')
-    parser.add_argument('--text_field', default='tweet_text_stemmed', help='Which text field to use for keyword matching?')
+    parser.add_argument('--text_field', default='tweet_text_keywords', help='Which text field to use for keyword matching?')
     parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
 

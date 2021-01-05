@@ -18,6 +18,9 @@ def check_args(args):
     if args.geo_level=='admin2':
         args.geo_level='admin2_id'
 
+    args.incl_keywords = list(args.incl_keywords)
+    args.excl_keywords = list(args.excl_keywords)
+
     return args
 
 def get_dates(args):
@@ -59,7 +62,7 @@ def aggregate_sentiment(date, args):
         ), sep=',', usecols=['tweet_id', 'sender_id']+geo_vars)
 
         if len(keywords) > 0:
-            tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv'.format(
+            tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv.gz'.format(
                 date.year, str(date.month).zfill(2), str(date.day).zfill(2)
             ), sep='\t', usecols=['tweet_id', args.text_field])
 
