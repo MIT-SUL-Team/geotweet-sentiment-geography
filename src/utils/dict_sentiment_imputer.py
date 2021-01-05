@@ -103,7 +103,7 @@ def parallel_imputation(args, imputation_method):
         print("Reading in data from {} (iteration {} of {})...".format(args.date, i+1, nb_iters))
 
         df_split = pd.read_csv(
-            args.data_path+'{}.tsv'.format(args.date), sep='\t', low_memory=False,
+            args.data_path+'{}.tsv.gz'.format(args.date), sep='\t', low_memory=False,
             nrows=args.max_rows, skiprows=range(1, i*args.max_rows+1), usecols=['tweet_id', 'lang', 'tweet_text_clean']
         )
         df_split = np.array_split(df_split, args.nb_cores)

@@ -17,7 +17,7 @@ def embedding_imputation(args):
     if args.overwrite_embeddings:
 
         df = pd.read_csv(
-            args.data_path+'{}.tsv'.format(args.date), sep='\t', low_memory=False,
+            args.data_path+'{}.tsv.gz'.format(args.date), sep='\t', low_memory=False,
             usecols=['tweet_id', 'lang', 'tweet_text_clean']
         )
         print("Read in data for {}: {} observations".format(args.date, df.shape[0]))
