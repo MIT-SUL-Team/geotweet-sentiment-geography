@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
-import sklearn
 import argparse
-from sentence_transformers import SentenceTransformer
 import joblib
 from tqdm.auto import tqdm
 import torch
