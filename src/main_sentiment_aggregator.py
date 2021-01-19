@@ -5,17 +5,7 @@ import numpy as np
 import argparse
 from tqdm.auto import tqdm
 
-from utils.aggregation_utils import check_args, get_dates, aggregate_sentiment, save_df
-
-def run_aggregation(args):
-
-    args = check_args(args)
-
-    df = pd.DataFrame()
-    for i in tqdm(get_dates(args)):
-        temp = aggregate_sentiment(i, args)
-        df = pd.concat([df, temp])
-        save_df(df, args)
+from utils.aggregation_utils import run_aggregation
 
 if __name__ == '__main__':
 
@@ -25,8 +15,8 @@ if __name__ == '__main__':
     parser.add_argument('--tweet_geo_path', default='', type=str, help='path to tweet geography data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
     parser.add_argument('--geo_level', default='admin1', type=str, help='level of geo granularity')
+    parser.add_argument('--time_level', default='day', type=str, help='level of time granularity')
     parser.add_argument('--ind_level', default=False, type=bool, help='Would you like the data aggregated at individual level?  (produces large files)')
-    parser.add_argument('--ind_normed', default=True, type=bool, help='Would you like to include the individual-normed aggregation?')
     parser.add_argument('--ind_robust_threshold', default=3, type=int, help='How many tweets for an individual to be considered robust?')
     parser.add_argument('--start_date', default='2019-01-01', type=str, help='Start date')
     parser.add_argument('--end_date', default='2020-06-30', type=str, help='End date')
