@@ -17,58 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
-from utils.data_cleaning import clean_for_content
-
-def split_train_test(df, args):
-
-    df_train, df_test = train_test_split(df, test_size=1-args.train_size, random_state=args.random_seed)
-    train_ids = list(df_train.index)
-    test_ids = list(df_test.index)
-
-    print("TRAIN size:", len(train_ids))
-    print("TEST size:", len(test_ids))
-
-    with open('data/labeled_data/train_ids.txt', 'w') as fp:
-        json.dump(train_ids, fp)
-    with open('data/labeled_data/test_ids.txt', 'w') as fp:
-        json.dump(test_ids, fp)
-
-def train_model(train_df, train_embeddings, args):
-
-    X = train_embeddings
-    y = train_df['label'].values
-
-    pca = PCA(n_components = args.pca_dims, random_state=args.random_seed)
-
-    if args.reg_norm == 'l1':
-        logreg = LogisticRegression(random_state=args.random_seed, solver='saga', max_iter=args.max_iter, C=args.reg, penalty='l1')
-    else:
-        logreg = LogisticRegression(random_state=args.random_seed, solver='lbfgs', max_iter=args.max_iter, C=args.reg, penalty=args.reg_norm)
-
-    pipe = Pipeline([('pca', pca), ('logreg', logreg)])
-    clf = pipe.fit(X, y)
-
-    print('Training set accuracy: {}'.format(clf.score(X, y)))
-
-    return clf
-
-def test_model(clf, test_df, test_embeddings):
-
-    print("Testing model...")
-
-    test_pred = clf.predict(test_embeddings)
-
-    correct = test_pred==test_df['label']
-    wrong = test_pred!=test_df['label']
-    tp = sum(correct & test_df['label'])
-    tn = sum(correct & ~test_df['label'])
-    fn = sum(wrong & test_df['label'])
-    fp = sum(wrong & ~test_df['label'])
-    t = sum(correct)
-
-    print('Got {} out of {} correct.'.format(t, test_df.shape[0]))
-    print('Accuracy rate is {}'.format(t/test_df.shape[0]))
-    print('Precision is {}, Recall is {}'.format(tp / (tp+fp), tp / (tp + fn)))
+from utils.emb_clf_setup_utils import clean_for_content, split_train_test, train_model, test_model
 
 if __name__ == '__main__':
 
@@ -101,9 +50,9 @@ if __name__ == '__main__':
         emb_model.max_seq_length = args.max_seq_length
         embeddings = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)
         np.save('data/labeled_data/embeddings.npy', np.array(embeddings))
-        joblib.dump(emb_model, 'models/emb.pkl')
-
-    embeddings = np.load('data/labeled_data/embeddings.npy')
+        torch.save(emb_model, 'models/emb.pkl')
+    else:
+        embeddings = np.load('data/labeled_data/embeddings.npy')
 
     # Generate Training set
     print("Preparing training and test sets")
@@ -118,7 +67,7 @@ if __name__ == '__main__':
     train_embeddings = embeddings[train_ids,:]
 
     clf_model = train_model(train_df, train_embeddings, args)
-    joblib.dump(clf_model, 'models/clf.pkl')
+    torch.save(clf_model, 'models/clf.pkl')
 
     print("\nPerformance on train set:")
     test_model(clf_model, train_df, train_embeddings)

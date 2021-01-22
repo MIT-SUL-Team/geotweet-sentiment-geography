@@ -5,6 +5,7 @@ import nltk
 import re
 import time
 import emoji
+import html
 from nltk.corpus import stopwords
 from nltk import SnowballStemmer
 import sys
@@ -20,6 +21,8 @@ stopwords_dict['en'] = list(set(eng_stopwords+add_stopwords))
 def clean_for_content(string, lang):
 
     string = re.sub(r'\bhttps?\:\/\/[^\s]+', ' ', string) #remove websites
+
+    string = html.unescape(string)
 
     emoji_pattern = re.compile(
         "["
@@ -52,6 +55,9 @@ def clean_for_content(string, lang):
     string = re.sub(r'<\s?3', ' ❤ ', string)
     string = re.sub(r'\@\s', ' at ', string)
 
+    # replace user names by @user
+    string = re.sub(r'\@[A-z0-9\_]+', ' @user ', string)
+
     if lang=='en':
         string = re.sub(r'(\&(amp)?|amp;)', ' and ', string)
         string = re.sub(r'(\bw\/?\b)', ' with ', string)
@@ -67,7 +73,66 @@ def clean_for_content(string, lang):
         # tl: timeline
 
     # replace some user names by real names?
+    # Replace user names by @user
 
     string = re.sub(r'\s+', ' ', string).strip()
 
     return string
+
+def test(i=None):
+    if i is None:
+        i = randrange(df.shape[0])
+    print(i)
+    print(df['text'][i])
+    print(df['text_clean'][i])
+
+def split_train_test(df, args):
+
+    df_train, df_test = train_test_split(df, test_size=1-args.train_size, random_state=args.random_seed)
+    train_ids = list(df_train.index)
+    test_ids = list(df_test.index)
+
+    print("TRAIN size:", len(train_ids))
+    print("TEST size:", len(test_ids))
+
+    with open('data/labeled_data/train_ids.txt', 'w') as fp:
+        json.dump(train_ids, fp)
+    with open('data/labeled_data/test_ids.txt', 'w') as fp:
+        json.dump(test_ids, fp)
+
+def train_model(train_df, train_embeddings, args):
+
+    X = train_embeddings
+    y = train_df['label'].values
+
+    pca = PCA(n_components = args.pca_dims, random_state=args.random_seed)
+
+    if args.reg_norm == 'l1':
+        logreg = LogisticRegression(random_state=args.random_seed, solver='saga', max_iter=args.max_iter, C=args.reg, penalty='l1')
+    else:
+        logreg = LogisticRegression(random_state=args.random_seed, solver='lbfgs', max_iter=args.max_iter, C=args.reg, penalty=args.reg_norm)
+
+    pipe = Pipeline([('pca', pca), ('logreg', logreg)])
+    clf = pipe.fit(X, y)
+
+    print('Training set accuracy: {}'.format(clf.score(X, y)))
+
+    return clf
+
+def test_model(clf, test_df, test_embeddings):
+
+    print("Testing model...")
+
+    test_pred = clf.predict(test_embeddings)
+
+    correct = test_pred==test_df['label']
+    wrong = test_pred!=test_df['label']
+    tp = sum(correct & test_df['label'])
+    tn = sum(correct & ~test_df['label'])
+    fn = sum(wrong & test_df['label'])
+    fp = sum(wrong & ~test_df['label'])
+    t = sum(correct)
+
+    print('Got {} out of {} correct.'.format(t, test_df.shape[0]))
+    print('Accuracy rate is {}'.format(t/test_df.shape[0]))
+    print('Precision is {}, Recall is {}'.format(tp / (tp+fp), tp / (tp + fn)))
