@@ -23,8 +23,8 @@ def check_args(args):
         raise ValueError("Must provide a valid geo level \('country', 'admin1', or 'admin2'\)")
     args.geo_vars = geo_vars[:geo_vars.index(args.geo_level)+1]
 
-    # if args.time_level not in ['daily', 'weekly', 'monthly', 'yearly', 'all']:
-    #     raise ValueError("Must provide a valid time level \('daily', 'weekly', 'monthly', 'yearly', or 'all'\)")
+    if args.time_level not in ['day', 'month', 'year', 'all']:
+        raise ValueError("Must provide a valid time level \('day', 'month', 'year', 'all'\)")
 
     time_vars = ['year', 'month', 'day']
     if args.time_level in time_vars:
@@ -139,11 +139,11 @@ def save_df(df, args):
     f.close()
 
 def last_day(i, args):
-    if args.time_level=='daily':
+    if args.time_level=='day':
         return True
-    elif args.time_level=='monthly':
+    elif args.time_level=='month':
         return i.month == (i+timedelta(days=1)).month
-    elif args.time_level=='yearly':
+    elif args.time_level=='year':
         return i.year == (i+timedelta(days=1)).year
     elif args.time_level=='all':
         return i == args.end_date
