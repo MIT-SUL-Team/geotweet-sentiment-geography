@@ -1,9 +1,8 @@
-#usage: python3 src/main_sentiment_aggregator.py USA --tweet_text_path /home/sentiment/data_lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo
+#usage: python3 src/main_sentiment_aggregator.py USA --tweet_text_path /home/sentiment/data_lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
 
 import pandas as pd
 import numpy as np
 import argparse
-from tqdm.auto import tqdm
 
 from utils.aggregation_utils import run_aggregation
 
