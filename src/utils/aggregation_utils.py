@@ -22,6 +22,7 @@ def check_args(args):
     if args.geo_level not in geo_vars:
         raise ValueError("Must provide a valid geo level \('country', 'admin1', or 'admin2'\)")
     args.geo_vars = geo_vars[:geo_vars.index(args.geo_level)+1]
+    args.geo_level = args.geo_level.replace("_id", "")
 
     if args.time_level not in ['day', 'month', 'year', 'all']:
         raise ValueError("Must provide a valid time level \('day', 'month', 'year', 'all'\)")
@@ -73,10 +74,13 @@ def get_data(date, args):
     del scores, tweet_geo
 
     if len(args.keywords) > 0:
+        tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
         if len(args.incl_keywords)>0:
             regex = '|'.join(args.incl_keywords)
-            tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
-            tweet_text = tweet_text[tweet_text[args.text_field].str.contains(regex)].reset_index(drop=True)
+            tweet_text = tweet_text[tweet_text[args.text_field].str.contains(regex)==True].reset_index(drop=True)
+        if len(args.excl_keywords)>0:
+            regex = '|'.join(args.excl_keywords)
+            tweet_text = tweet_text[tweet_text[args.text_field].str.contains(regex)==False].reset_index(drop=True)
 
         df = pd.merge(df, tweet_text, how='inner', on='tweet_id')
         del tweet_text
