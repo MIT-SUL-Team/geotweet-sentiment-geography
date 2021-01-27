@@ -65,7 +65,7 @@ def get_data(date, args):
             ), sep='\t', usecols=['tweet_id', args.text_field])
 
     except:
-        print("No data for {}.".format(date))
+        print("\nNo data for {}.".format(date))
         return pd.DataFrame()
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
@@ -91,7 +91,7 @@ def get_data(date, args):
     df['year'] = pd.DatetimeIndex(df['date']).year
 
     for var in args.geo_vars:
-        df[var].fillna('', inplace=True)
+        df[var].fillna(0, inplace=True)
 
     return df
 
