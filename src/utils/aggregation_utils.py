@@ -110,7 +110,9 @@ def groupby(df, gb_vars, prefix=''):
 
 def aggregate_sentiment(df, args):
 
-    if args.ind_level:
+    if df.shape[0]==0:
+        return df
+    elif args.ind_level:
         df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars)
         return df
     else:
