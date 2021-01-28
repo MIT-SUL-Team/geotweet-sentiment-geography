@@ -83,7 +83,7 @@ def get_data(date, args):
             del tweet_text['keep']
         if len(args.excl_keywords)>0:
             regex = '|'.join(args.excl_keywords)
-            tweet_text['drop'] = bool(re.search(regex, elem) for elem in tweet_text[args.text_field].values
+            tweet_text['drop'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
             tweet_text = tweet_text[tweet_text['drop']==True].reset_index(drop=True)
             del tweet_text['drop']
 

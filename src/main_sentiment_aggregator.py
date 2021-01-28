@@ -28,5 +28,3 @@ if __name__ == '__main__':
     print("\nRunning for {}".format(args.country))
 
     run_aggregation(args)
-
-# TO DO: implement keywords regex
