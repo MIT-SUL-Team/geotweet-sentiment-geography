@@ -116,7 +116,7 @@ def groupby(df, gb_vars, prefix=''):
 def aggregate_sentiment(df, args):
 
     if df.shape[0]==0:
-        return df
+        return pd.DataFrame()
     elif args.ind_level:
         df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars)
         return df
@@ -168,9 +168,9 @@ def run_aggregation(args):
     dates = get_dates(args)
     for i in tqdm(dates):
         t = get_data(i, args)
-        temp = pd.concat([temp, t])
+        temp = pd.concat([temp, t], axis=0)
         if last_day(i, args) or i==dates[-1]:
             temp = aggregate_sentiment(temp, args)
-            df = pd.concat([df, temp])
+            df = pd.concat([df, temp], axis=0)
             save_df(df, args)
             temp = pd.DataFrame()
