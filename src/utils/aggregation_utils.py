@@ -5,6 +5,7 @@ import os.path
 import sys
 from datetime import date, timedelta
 from tqdm.auto import tqdm
+import re
 
 def check_args(args):
 
@@ -77,10 +78,14 @@ def get_data(date, args):
         tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
         if len(args.incl_keywords)>0:
             regex = '|'.join(args.incl_keywords)
-            tweet_text = tweet_text[tweet_text[args.text_field].str.contains(regex)==True].reset_index(drop=True)
+            tweet_text['keep'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
+            tweet_text = tweet_text[tweet_text['keep']==True].reset_index(drop=True)
+            del tweet_text['keep']
         if len(args.excl_keywords)>0:
             regex = '|'.join(args.excl_keywords)
-            tweet_text = tweet_text[tweet_text[args.text_field].str.contains(regex)==False].reset_index(drop=True)
+            tweet_text['drop'] = bool(re.search(regex, elem) for elem in tweet_text[args.text_field].values
+            tweet_text = tweet_text[tweet_text['drop']==True].reset_index(drop=True)
+            del tweet_text['drop']
 
         df = pd.merge(df, tweet_text, how='inner', on='tweet_id')
         del tweet_text
