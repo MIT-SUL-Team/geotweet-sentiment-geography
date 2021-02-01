@@ -34,6 +34,11 @@ def check_args(args):
     elif args.time_level=='all':
         args.time_vars = []
 
+    args.other_gb_vars = []
+    if args.lang_level:
+        args.other_gb_vars.append('lang')
+        args.name_ext = "_by_lang" + args.name_ext
+
     args.incl_keywords = list(args.incl_keywords)
     args.excl_keywords = list(args.excl_keywords)
     args.keywords = args.incl_keywords + args.excl_keywords
@@ -60,10 +65,10 @@ def get_data(date, args):
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
         ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars)
 
-        if len(args.keywords) > 0:
+        if len(args.keywords) > 0 or args.lang_level:
             tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv.gz'.format(
                 date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-            ), sep='\t', usecols=['tweet_id', args.text_field])
+            ), sep='\t', usecols=['tweet_id', 'lang', args.text_field])
 
     except:
         print("\nNo data for {}.".format(date))
@@ -74,19 +79,21 @@ def get_data(date, args):
     df = pd.merge(tweet_geo, scores, how='inner', on='tweet_id')
     del scores, tweet_geo
 
-    if len(args.keywords) > 0:
-        tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
+    if len(args.keywords) > 0 or args.lang_level:
         if len(args.incl_keywords)>0:
+            tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
             regex = '|'.join(args.incl_keywords)
             tweet_text['keep'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
             tweet_text = tweet_text[tweet_text['keep']==True].reset_index(drop=True)
             del tweet_text['keep']
         if len(args.excl_keywords)>0:
+            tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
             regex = '|'.join(args.excl_keywords)
             tweet_text['drop'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
             tweet_text = tweet_text[tweet_text['drop']==True].reset_index(drop=True)
             del tweet_text['drop']
 
+        del tweet_text[args.text_field]
         df = pd.merge(df, tweet_text, how='inner', on='tweet_id')
         del tweet_text
 
@@ -118,32 +125,32 @@ def aggregate_sentiment(df, args):
     if df.shape[0]==0:
         return pd.DataFrame()
     elif args.ind_level:
-        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars)
+        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
         return df
     else:
-        by_tweet = groupby(df, args.time_vars+args.geo_vars, prefix='tweet_')
-        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars)
-        by_ind = groupby(df, args.time_vars+args.geo_vars, prefix='ind_')
+        by_tweet = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='tweet_')
+        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
+        by_ind = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='ind_')
         df = df[df['count']>args.ind_robust_threshold].reset_index(drop=True)
-        by_robust_ind = groupby(df, args.time_vars+args.geo_vars, prefix='robust_ind_')
-        df = pd.merge(by_tweet, by_ind, how='left', on=args.time_vars+args.geo_vars)
-        df = pd.merge(df, by_robust_ind, how='left', on=args.time_vars+args.geo_vars)
+        by_robust_ind = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='robust_ind_')
+        df = pd.merge(by_tweet, by_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
+        df = pd.merge(df, by_robust_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         return df
 
 def save_df(df, args):
 
-    df.to_csv('data/aggregate_sentiment/{}_{}_{}_{}{}.tsv'.format(
+    df.to_csv('data/aggregate_sentiment/{}_{}_{}_{}{}.tsv.gz'.format(
+        args.sentiment_method,
         args.country.lower(),
         args.geo_level,
         args.time_level,
-        args.sentiment_method,
         args.name_ext
     ), sep='\t', index=False)
     f = open('data/aggregate_sentiment/{}_{}_{}_{}{}_README.txt'.format(
+        args.sentiment_method,
         args.country.lower(),
         args.geo_level,
         args.time_level,
-        args.sentiment_method,
         args.name_ext
     ), "w")
     f.write('Run with the following options:\n{}'.format(args))
