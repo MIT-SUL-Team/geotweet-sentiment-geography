@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--time_level', default='day', type=str, help='level of time granularity')
     parser.add_argument('--ind_robust_threshold', default=3, type=int, help='How many tweets for an individual to be considered robust?')
     parser.add_argument('--ind_level', default=False, type=bool, help='Would you like the data aggregated at individual level?  (produces larger files)')
-    parser.add_argument('--lang_level', default=False, type=book, help='Would you like the data aggregated by languages? (produces larger files)')
+    parser.add_argument('--lang_level', default=False, type=bool, help='Would you like the data aggregated by languages? (produces larger files)')
     parser.add_argument('--start_date', default='2019-01-01', type=str, help='Start date')
     parser.add_argument('--end_date', default='2020-09-30', type=str, help='End date')
     parser.add_argument('--incl_keywords', nargs='*', default='', help='Which keywords do you want to include in the subset?')
