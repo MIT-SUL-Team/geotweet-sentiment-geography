@@ -64,6 +64,7 @@ def get_data(date, args):
         tweet_geo = pd.read_csv(args.tweet_geo_path+'{}-{}-{}.tsv.gz'.format(
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
         ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars)
+        tweet_geo = tweet_geo.sort_values(['admin1_id', 'admin2_id']).drop_duplicates('tweet_id', keep='first').reset_index(drop=True)
 
         if len(args.keywords) > 0 or args.lang_level:
             tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv.gz'.format(
