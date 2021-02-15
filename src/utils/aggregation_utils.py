@@ -141,7 +141,7 @@ def aggregate_sentiment(df, args):
 
 def save_df(df, args):
 
-    df.to_csv('data/aggregate_sentiment/{}_{}_{}_{}{}.tsv.gz'.format(
+    df.to_csv('data/aggregate_sentiment/{}_{}_{}_{}{}.tsv'.format(
         args.sentiment_method,
         args.country.lower(),
         args.geo_level,
