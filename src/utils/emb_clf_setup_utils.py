@@ -9,6 +9,12 @@ import html
 from nltk.corpus import stopwords
 from nltk import SnowballStemmer
 import sys
+from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+import json
 
 # nltk.download("stopwords")
 stopwords_dict = {}
@@ -62,18 +68,6 @@ def clean_for_content(string, lang):
         string = re.sub(r'(\&(amp)?|amp;)', ' and ', string)
         string = re.sub(r'(\bw\/?\b)', ' with ', string)
         string = re.sub(r'\brn\b', ' right now ', string)
-        # string = re.sub(r'\bn\b', ' and ', string) # UNSURE OF THIS ONE! How about n-word? North? etc.
-        # fr: for real
-        # bc: because
-        # tf: the fuck
-        # mf: mother fucker
-        # em: them
-        # da: the
-        # pls: please
-        # tl: timeline
-
-    # replace some user names by real names?
-    # Replace user names by @user
 
     string = re.sub(r'\s+', ' ', string).strip()
 

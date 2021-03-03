@@ -1,21 +1,13 @@
-# python3 src/setup_emb_clf.py --overwrite_embeddings=True
+# python3 src/setup_emb_clf.py --overwrite_embeddings=True --max_seq_length 64
 
 import pandas as pd
 import numpy as np
-import sklearn
 import argparse
 from sentence_transformers import SentenceTransformer
-import joblib
 from tqdm.auto import tqdm
 import json
-import sys
-import re
 import argparse
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
+import torch
 
 from utils.emb_clf_setup_utils import clean_for_content, split_train_test, train_model, test_model
 
@@ -23,8 +15,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--emb_model', type=str, default='xlm-r-bert-base-nli-stsb-mean-tokens', help='embedding model')
-    parser.add_argument('--max_seq_length', type=int, default=32, help='maximum sequence length')
     parser.add_argument('--overwrite_embeddings', default=False, type=bool, help='Rerun the embeddings?')
+    parser.add_argument('--max_seq_length', type=int, default=32, help='maximum sequence length')
     parser.add_argument('--train_size', default=0.8, type=float, help='What is the size of the training set?')
     parser.add_argument('--max_iter', type=int, default=100, help='number of max iterations for model fitting')
     parser.add_argument('--reg', type=float, default=1., help='inverse regularization stregnth, smaller values specify stronger regularization.')

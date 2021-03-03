@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import argparse
-import joblib
+import torch
 from tqdm.auto import tqdm
 import torch
 
@@ -21,8 +21,8 @@ def embedding_imputation(args):
         print("Read in data for {}: {} observations".format(args.date, df.shape[0]))
         df = df[df['tweet_text_clean'].notnull()].reset_index(drop=True)
 
-        emb_model = joblib.load('models/emb.pkl')
-        clf_model = joblib.load('models/clf.pkl')
+        emb_model = torch.load('models/emb.pkl')
+        clf_model = torch.load('models/clf.pkl')
 
         nb_iters = int(np.ceil(df.shape[0]/args.max_rows))
 

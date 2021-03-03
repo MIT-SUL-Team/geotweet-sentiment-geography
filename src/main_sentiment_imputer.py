@@ -1,4 +1,4 @@
-#usage: python3 src/main_sentiment_imputer.py 20200101 --data_path /home/sentiment/data_lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
+# usage: python3 src/main_sentiment_imputer.py 20200101 --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
 
 import pandas as pd
 import numpy as np
