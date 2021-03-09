@@ -1,4 +1,4 @@
-# python3 src/setup_emb_clf.py --overwrite_embeddings=True --max_seq_length 64
+# python3 src/setup_emb_clf.py --overwrite_embeddings True --max_seq_length 64
 
 import pandas as pd
 import numpy as np
@@ -14,7 +14,7 @@ from utils.emb_clf_setup_utils import clean_for_content, split_train_test, train
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--emb_model', type=str, default='xlm-r-bert-base-nli-stsb-mean-tokens', help='embedding model')
+    parser.add_argument('--emb_model', type=str, default='stsb-xlm-r-multilingual', help='embedding model')
     parser.add_argument('--overwrite_embeddings', default=False, type=bool, help='Rerun the embeddings?')
     parser.add_argument('--max_seq_length', type=int, default=32, help='maximum sequence length')
     parser.add_argument('--train_size', default=0.8, type=float, help='What is the size of the training set?')

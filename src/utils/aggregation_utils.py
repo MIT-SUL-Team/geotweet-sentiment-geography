@@ -3,7 +3,7 @@ import numpy as np
 import glob
 import os.path
 import sys
-from datetime import date, timedelta
+import datetime
 from tqdm.auto import tqdm
 import re
 
@@ -38,19 +38,29 @@ def check_args(args):
     if args.lang_level:
         args.other_gb_vars.append('lang')
         args.name_ext = "_by_lang" + args.name_ext
+    if args.ind_level:
+        args.name_ext = "_by_ind" + args.name_ext
 
     args.incl_keywords = list(args.incl_keywords)
     args.excl_keywords = list(args.excl_keywords)
     args.keywords = args.incl_keywords + args.excl_keywords
 
+    args.filename = "{}_{}_{}_{}{}".format(
+        args.sentiment_method,
+        'global' if args.country is None else args.country.lower(),
+        args.geo_level,
+        args.time_level,
+        args.name_ext
+    )
+
     return args
 
 def get_dates(args):
 
-    start_date = date(int(args.start_date[:4]), int(args.start_date[5:7]), int(args.start_date[8:]))
-    end_date = date(int(args.end_date[:4]), int(args.end_date[5:7]), int(args.end_date[8:]))
+    start_date = datetime.date(int(args.start_date[:4]), int(args.start_date[5:7]), int(args.start_date[8:]))
+    end_date = datetime.date(int(args.end_date[:4]), int(args.end_date[5:7]), int(args.end_date[8:]))
 
-    dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days +1)]
+    dates = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days +1)]
 
     return dates
 
@@ -76,7 +86,8 @@ def get_data(date, args):
         return pd.DataFrame()
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
-    tweet_geo = tweet_geo[tweet_geo['country']==args.country].reset_index(drop=True)
+    if args.country is not None:
+        tweet_geo = tweet_geo[tweet_geo['country']==args.country].reset_index(drop=True)
     df = pd.merge(tweet_geo, scores, how='inner', on='tweet_id')
     del scores, tweet_geo
 
@@ -91,7 +102,7 @@ def get_data(date, args):
             tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
             regex = '|'.join(args.excl_keywords)
             tweet_text['drop'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
-            tweet_text = tweet_text[tweet_text['drop']==True].reset_index(drop=True)
+            tweet_text = tweet_text[tweet_text['drop']==False].reset_index(drop=True)
             del tweet_text['drop']
 
         del tweet_text[args.text_field]
@@ -141,19 +152,11 @@ def aggregate_sentiment(df, args):
 
 def save_df(df, args):
 
-    df.to_csv('data/aggregate_sentiment/{}_{}_{}_{}{}.tsv'.format(
-        args.sentiment_method,
-        args.country.lower(),
-        args.geo_level,
-        args.time_level,
-        args.name_ext
+    df.to_csv('data/aggregate_sentiment/{}.tsv'.format(
+        args.filename
     ), sep='\t', index=False)
-    f = open('data/aggregate_sentiment/{}_{}_{}_{}{}_README.txt'.format(
-        args.sentiment_method,
-        args.country.lower(),
-        args.geo_level,
-        args.time_level,
-        args.name_ext
+    f = open('data/aggregate_sentiment/{}_README.txt'.format(
+        args.filename
     ), "w")
     f.write('Run with the following options:\n{}'.format(args))
     f.close()
@@ -162,9 +165,9 @@ def last_day(i, args):
     if args.time_level=='day':
         return True
     elif args.time_level=='month':
-        return i.month == (i+timedelta(days=1)).month
+        return i.month == (i+datetime.timedelta(days=1)).month
     elif args.time_level=='year':
-        return i.year == (i+timedelta(days=1)).year
+        return i.year == (i+datetime.timedelta(days=1)).year
     elif args.time_level=='all':
         return i == args.end_date
 

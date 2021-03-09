@@ -1,4 +1,4 @@
-#usage: python3 src/main_sentiment_aggregator.py USA --tweet_text_path /home/sentiment/data_lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
+#usage: python3 src/main_sentiment_aggregator.py --country USA --tweet_text_path /home/sentiment/data-lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
 
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ from utils.aggregation_utils import run_aggregation
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('country', help='Country abbreviation (3 letter)')
+    parser.add_argument('--country', default=None, type=str, help='Country abbreviation (3 letter)')
     parser.add_argument('--tweet_text_path', default='', type=str, help='path to tweet text data')
     parser.add_argument('--tweet_geo_path', default='', type=str, help='path to tweet geography data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
