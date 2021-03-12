@@ -9,7 +9,7 @@ from utils.aggregation_utils import run_aggregation
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--country', default=None, type=str, help='Country abbreviation (3 letter)')
+    parser.add_argument('--countries', nargs='*', default='', help='Country abbreviations (3 letter)')
     parser.add_argument('--tweet_text_path', default='', type=str, help='path to tweet text data')
     parser.add_argument('--tweet_geo_path', default='', type=str, help='path to tweet geography data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
@@ -25,7 +25,5 @@ if __name__ == '__main__':
     parser.add_argument('--text_field', default='tweet_text_keywords', help='Which text field to use for keyword matching?')
     parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
-
-    print("\nRunning for {}".format(args.country))
 
     run_aggregation(args)

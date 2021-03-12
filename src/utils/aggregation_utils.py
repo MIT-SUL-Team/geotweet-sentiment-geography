@@ -47,7 +47,7 @@ def check_args(args):
 
     args.filename = "{}_{}_{}_{}{}".format(
         args.sentiment_method,
-        'global' if args.country is None else args.country.lower(),
+        'global' if len(args.countries)==0 else "_".join([elem.lower() for elem in args.countries]),
         args.geo_level,
         args.time_level,
         args.name_ext
@@ -86,8 +86,8 @@ def get_data(date, args):
         return pd.DataFrame()
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
-    if args.country is not None:
-        tweet_geo = tweet_geo[tweet_geo['country']==args.country].reset_index(drop=True)
+    if len(args.countries)>0:
+        tweet_geo = tweet_geo[tweet_geo['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
     df = pd.merge(tweet_geo, scores, how='inner', on='tweet_id')
     del scores, tweet_geo
 
