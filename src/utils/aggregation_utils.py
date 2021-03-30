@@ -73,8 +73,7 @@ def get_data(date, args):
 
         tweet_geo = pd.read_csv(args.tweet_geo_path+'{}-{}-{}.tsv.gz'.format(
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-        ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars)
-        tweet_geo = tweet_geo.drop_duplicates('tweet_id', keep='first').reset_index(drop=True)
+        ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars).drop_duplicates()
 
         if len(args.keywords) > 0 or args.lang_level:
             tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv.gz'.format(
@@ -120,32 +119,57 @@ def get_data(date, args):
 
     return df
 
-def groupby(df, gb_vars, prefix=''):
-    df = df.groupby(gb_vars)
-    df = pd.DataFrame({
-        prefix+'count': df['score'].count(),
-        prefix+'score': df['score'].mean(),
-        prefix+'score_10q': df['score'].quantile(0.1),
-        prefix+'score_25q': df['score'].quantile(0.25),
-        prefix+'score_50q': df['score'].quantile(0.5),
-        prefix+'score_75q': df['score'].quantile(0.75),
-        prefix+'score_90q': df['score'].quantile(0.9),
-    }).reset_index()
-    return df
-
-def aggregate_sentiment(df, args):
-
+def groupby_to_ind(df, args):
     if df.shape[0]==0:
         return pd.DataFrame()
-    elif args.ind_level:
-        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
+    else:
+        df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
+        df = pd.DataFrame({
+            'count': df['tweet_id'].count(),
+            'score': df['score'].mean(),
+        }).reset_index()
+        return df
+
+def weighted_groupby(df, args, ind_level=True, prefix=""):
+    if df.shape[0]==0:
+        return pd.DataFrame()
+    else:
+        if ind_level:
+            vars = ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars
+        else:
+            vars = args.time_vars+args.geo_vars+args.other_gb_vars
+        df = df.groupby(vars)
+        df = pd.DataFrame({
+            prefix+'count': df['count'].sum(),
+            prefix+'score': df.apply(lambda x: np.average(x['score'], weights=x['count']))
+        }).reset_index()
+        return df
+
+def quantiles_groupby(df, args, prefix=""):
+    if df.shape[0]==0:
+        return pd.DataFrame()
+    else:
+        vars = args.time_vars+args.geo_vars+args.other_gb_vars
+        df = df.groupby(vars)
+        df = pd.DataFrame({
+            prefix+'count': df['sender_id'].count(),
+            prefix+'score': df['score'].mean(),
+            prefix+'score_10q': df['score'].quantile(0.1),
+            prefix+'score_25q': df['score'].quantile(0.25),
+            prefix+'score_50q': df['score'].quantile(0.5),
+            prefix+'score_75q': df['score'].quantile(0.75),
+            prefix+'score_90q': df['score'].quantile(0.9),
+        }).reset_index()
+        return df
+
+def aggregate_sentiment(df, args):
+    if args.ind_level:
         return df
     else:
-        by_tweet = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='tweet_')
-        df = groupby(df, ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
-        by_ind = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='ind_')
+        by_tweet = weighted_groupby(df, args, ind_level=False, prefix='tweet_')
+        by_ind = quantiles_groupby(df, args, prefix='ind_')
         df = df[df['count']>args.ind_robust_threshold].reset_index(drop=True)
-        by_robust_ind = groupby(df, args.time_vars+args.geo_vars+args.other_gb_vars, prefix='robust_ind_')
+        by_robust_ind = quantiles_groupby(df, args, prefix='robust_ind_')
         df = pd.merge(by_tweet, by_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         df = pd.merge(df, by_robust_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         return df
@@ -176,13 +200,14 @@ def run_aggregation(args):
     args = check_args(args)
 
     df = pd.DataFrame()
-    temp = pd.DataFrame()
+    ind_df = pd.DataFrame()
     dates = get_dates(args)
     for i in tqdm(dates):
-        t = get_data(i, args)
-        temp = pd.concat([temp, t], axis=0)
+        temp = get_data(i, args)
+        temp = groupby_to_ind(temp, args)
+        ind_df = weighted_groupby(pd.concat([ind_df, temp], axis=0), args)
         if last_day(i, args) or i==dates[-1]:
-            temp = aggregate_sentiment(temp, args)
-            df = pd.concat([df, temp], axis=0)
+            ind_df = aggregate_sentiment(ind_df, args)
+            df = pd.concat([df, ind_df], axis=0)
             save_df(df, args)
-            temp = pd.DataFrame()
+            ind_df = pd.DataFrame()
