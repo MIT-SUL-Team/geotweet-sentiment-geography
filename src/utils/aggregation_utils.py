@@ -71,14 +71,14 @@ def get_data(date, args):
             date.year, str(date.month).zfill(2), str(date.day).zfill(2), args.sentiment_method
         ), sep='\t')
 
-        tweet_geo = pd.read_csv(args.tweet_geo_path+'{}-{}-{}.tsv.gz'.format(
+        geo_df = pd.read_csv(args.geo_path+'{}-{}-{}.tsv.gz'.format(
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-        ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars).drop_duplicates()
+        ), sep=',', usecols=['id', 'sender_id']+args.geo_vars).drop_duplicates()
 
         if len(args.keywords) > 0 or args.lang_level:
-            tweet_text = pd.read_csv(args.tweet_text_path+'{}{}{}.tsv.gz'.format(
+            text_df = pd.read_csv(args.text_path+'{}{}{}.tsv.gz'.format(
                 date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-            ), sep='\t', usecols=['tweet_id', 'lang', args.text_field])
+            ), sep='\t', usecols=['id', 'lang', args.text_field])
 
     except:
         print("\nNo data for {}.".format(date))
@@ -86,27 +86,27 @@ def get_data(date, args):
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
     if len(args.countries)>0:
-        tweet_geo = tweet_geo[tweet_geo['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
-    df = pd.merge(tweet_geo, scores, how='inner', on='tweet_id')
-    del scores, tweet_geo
+        geo_df = geo_df[geo_df['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
+    df = pd.merge(geo_df, scores, how='inner', on='id')
+    del scores, geo_df
 
     if len(args.keywords) > 0 or args.lang_level:
         if len(args.incl_keywords)>0:
-            tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
+            text_df = text_df[text_df[args.text_field].notnull()].reset_index(drop=True)
             regex = '|'.join(args.incl_keywords)
-            tweet_text['keep'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
-            tweet_text = tweet_text[tweet_text['keep']==True].reset_index(drop=True)
-            del tweet_text['keep']
+            text_df['keep'] = [bool(re.search(regex, elem)) for elem in text_df[args.text_field].values]
+            text_df = text_df[text_df['keep']==True].reset_index(drop=True)
+            del text_df['keep']
         if len(args.excl_keywords)>0:
-            tweet_text = tweet_text[tweet_text[args.text_field].notnull()].reset_index(drop=True)
+            text_df = text_df[text_df[args.text_field].notnull()].reset_index(drop=True)
             regex = '|'.join(args.excl_keywords)
-            tweet_text['drop'] = [bool(re.search(regex, elem)) for elem in tweet_text[args.text_field].values]
-            tweet_text = tweet_text[tweet_text['drop']==False].reset_index(drop=True)
-            del tweet_text['drop']
+            text_df['drop'] = [bool(re.search(regex, elem)) for elem in text_df[args.text_field].values]
+            text_df = text_df[text_df['drop']==False].reset_index(drop=True)
+            del text_df['drop']
 
-        del tweet_text[args.text_field]
-        df = pd.merge(df, tweet_text, how='inner', on='tweet_id')
-        del tweet_text
+        del text_df[args.text_field]
+        df = pd.merge(df, text_df, how='inner', on='id')
+        del text_df
 
     df['date'] = date
     dtindex = pd.DatetimeIndex(df['date'])
@@ -125,7 +125,7 @@ def groupby_to_ind(df, args):
     else:
         df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
         df = pd.DataFrame({
-            'count': df['tweet_id'].count(),
+            'count': df['id'].count(),
             'score': df['score'].mean(),
         }).reset_index()
         return df
@@ -166,11 +166,11 @@ def aggregate_sentiment(df, args):
     if args.ind_level:
         return df
     else:
-        by_tweet = weighted_groupby(df, args, ind_level=False, prefix='tweet_')
+        by_post = weighted_groupby(df, args, ind_level=False, prefix='post_')
         by_ind = quantiles_groupby(df, args, prefix='ind_')
         df = df[df['count']>args.ind_robust_threshold].reset_index(drop=True)
         by_robust_ind = quantiles_groupby(df, args, prefix='robust_ind_')
-        df = pd.merge(by_tweet, by_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
+        df = pd.merge(by_post, by_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         df = pd.merge(df, by_robust_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         return df
 

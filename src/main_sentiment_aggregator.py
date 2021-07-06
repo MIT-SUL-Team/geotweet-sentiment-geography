@@ -1,4 +1,4 @@
-#usage: python3 src/main_sentiment_aggregator.py --country USA --tweet_text_path /home/sentiment/data-lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
+#usage: python3 src/main_sentiment_aggregator.py twitter --country USA --tweet_text_path /home/sentiment/data-lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
 
 import pandas as pd
 import numpy as np
@@ -9,9 +9,10 @@ from utils.aggregation_utils import run_aggregation
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('platform', help='Which social media data are we using (twitter, weibo)?')
     parser.add_argument('--countries', nargs='*', default='', help='Country abbreviations (3 letter)')
-    parser.add_argument('--tweet_text_path', default='', type=str, help='path to tweet text data')
-    parser.add_argument('--tweet_geo_path', default='', type=str, help='path to tweet geography data')
+    parser.add_argument('--text_path', default='', type=str, help='path to tweet text data')
+    parser.add_argument('--geo_path', default='', type=str, help='path to tweet geography data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
     parser.add_argument('--geo_level', default='admin1', type=str, help='level of geo granularity')
     parser.add_argument('--time_level', default='day', type=str, help='level of time granularity')
