@@ -4,8 +4,7 @@ from collections import Counter
 from multiprocessing import Pool
 import time
 
-from utils.sentiment_imputer_utils import file_to_dict, get_words_simple, get_words_advanced, get_emojis
-from utils.liwc import _search_trie
+from utils.sentiment_imputer_utils import _search_trie, file_to_dict, get_words_simple, get_words_advanced, get_emojis
 
 def imputer(row, imputation_method, sentiment_dict, args):
 

@@ -25,7 +25,7 @@ def imputer(args, imputation_method):
         df = embedding_imputation(args)
 
     df.to_csv(
-        args.output_path+'sentiment_{}_{}.tsv'.format(args.date, imputation_method), sep='\t', index=False
+        args.output_path+'{}_sentiment_{}_{}.tsv'.format(args.platform, args.date, imputation_method), sep='\t', index=False
     )
     print("Done! Imputed {} scores.".format(df.shape[0]))
     del df
@@ -33,6 +33,7 @@ def imputer(args, imputation_method):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('platform', help='What social media data are we using?')
     parser.add_argument('date', help='What day do you want to impute sentiment for?')
     parser.add_argument('--data_path', default='', type=str, help='path to data')
     parser.add_argument('--dict_methods', nargs='*', default='liwc emoji hedono', help='Which dict techniques do you want to use?')
@@ -42,7 +43,6 @@ if __name__ == '__main__':
     parser.add_argument('--score_digits', default=6, type=int, help='how many digits to the output score')
 
     # Emb based parameters
-    parser.add_argument('--overwrite_embeddings', default=False, type=bool, help='Do you want to rerun the embeddings?')
     parser.add_argument('--batch_size', default = 100, type = int, help='batch size')
 
     # Dict based parameters
