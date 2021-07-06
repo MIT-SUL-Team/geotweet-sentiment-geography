@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from collections import Counter
 from multiprocessing import Pool
 import time
@@ -8,9 +9,9 @@ from utils.sentiment_imputer_utils import _search_trie, file_to_dict, get_words_
 
 def imputer(row, imputation_method, sentiment_dict, args):
 
-    tweet_id = row['tweet_id']
+    id = row['id']
     lang = row['lang']
-    tweet = str(row['tweet_text_clean'])
+    text = str(row['text_clean'])
 
     if (imputation_method=='liwc') or (imputation_method=='hedono') or (imputation_method=='emoji'):
 
@@ -21,11 +22,11 @@ def imputer(row, imputation_method, sentiment_dict, args):
 
             # Get tockens:
             if lang=='emoji':
-                words = get_emojis(tweet)
+                words = get_emojis(text)
             elif (lang=='ru') or (lang=='ur') or (lang=='no') or (lang=='ca'):
-                words = get_words_simple(tweet)
+                words = get_words_simple(text)
             else:
-                words = get_words_advanced(tweet)
+                words = get_words_advanced(text)
 
             # Evaluate tockens:
             if imputation_method=='liwc':
@@ -77,9 +78,9 @@ def imputer(row, imputation_method, sentiment_dict, args):
         else:
             score, hit_count = np.nan, np.nan
 
-        del tweet, lang
+        del text, lang
 
-        return pd.Series({'tweet_id':tweet_id, 'score':score, 'hit_count':hit_count})
+        return pd.Series({'id':id, 'score':score, 'hit_count':hit_count})
 
     else:
         print("Not valid imputation method")
@@ -93,7 +94,7 @@ def parallel_imputation(args, imputation_method):
     sentiment_dict = file_to_dict(imputation_method)
 
     results_dict = {}
-    data_obs = sum(1 for line in open(args.data_path+args.date+'.tsv'))-1
+    data_obs = sum(1 for line in open(os.path.join(args.data_path, 'text_{}.tsv.gz'.format(args.date))))-1
     nb_iters = int(np.ceil(data_obs/args.max_rows))
 
     start = time.time()
@@ -102,8 +103,8 @@ def parallel_imputation(args, imputation_method):
         print("Reading in data from {} (iteration {} of {})...".format(args.date, i+1, nb_iters))
 
         df_split = pd.read_csv(
-            args.data_path+'{}.tsv.gz'.format(args.date), sep='\t', low_memory=False,
-            nrows=args.max_rows, skiprows=range(1, i*args.max_rows+1), usecols=['tweet_id', 'lang', 'tweet_text_clean']
+            os.path.join(args.data_path, 'text_{}.tsv.gz'.format(args.date)), sep='\t', low_memory=False,
+            nrows=args.max_rows, skiprows=range(1, i*args.max_rows+1), usecols=['id', 'lang', 'text_clean']
         )
         df_split = np.array_split(df_split, args.nb_cores)
         pool = Pool(args.nb_cores)
