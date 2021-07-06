@@ -94,7 +94,7 @@ def parallel_imputation(args, imputation_method):
     sentiment_dict = file_to_dict(imputation_method)
 
     results_dict = {}
-    data_obs = sum(1 for line in open(os.path.join(args.data_path, 'text_{}.tsv.gz'.format(args.date))))-1
+    data_obs = sum(1 for line in open(os.path.join(args.data_path, 'text_{}.tsv.gz'.format(args.date)), encoding="utf8", errors='ignore'))-1
     nb_iters = int(np.ceil(data_obs/args.max_rows))
 
     start = time.time()
