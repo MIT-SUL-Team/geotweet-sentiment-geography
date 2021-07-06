@@ -1,4 +1,4 @@
-# usage: python3 src/main_sentiment_imputer.py 20200101 --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
+# usage: python3 src/main_sentiment_imputer.py twitter 20200101 --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
 
 import pandas as pd
 import numpy as np
@@ -33,7 +33,7 @@ def imputer(args, imputation_method):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('platform', help='What social media data are we using?')
+    parser.add_argument('platform', help='Which social media data are we using (twitter, weibo)?')
     parser.add_argument('date', help='What day do you want to impute sentiment for?')
     parser.add_argument('--data_path', default='', type=str, help='path to data')
     parser.add_argument('--dict_methods', nargs='*', default='liwc emoji hedono', help='Which dict techniques do you want to use?')

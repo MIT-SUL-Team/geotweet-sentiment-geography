@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 import torch
 
 def create_embeddings(emb_model, df, args):
-    emb = emb_model.encode(df['tweet_text_clean'].values, show_progress_bar=True, batch_size=args.batch_size)
+    emb = emb_model.encode(df['text_clean'].values, show_progress_bar=True, batch_size=args.batch_size)
     torch.cuda.empty_cache()
     return emb
 
@@ -40,6 +40,6 @@ def embedding_imputation(args):
 
     df['score'] = np.round(scores, args.score_digits)
 
-    df = df[['tweet_id', 'score']]
+    df = df[['id', 'score']]
 
     return df
