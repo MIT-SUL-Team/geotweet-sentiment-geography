@@ -67,8 +67,8 @@ def get_dates(args):
 def get_data(date, args):
 
     try:
-        scores = pd.read_csv('data/sentiment_scores/sentiment_{}{}{}_{}.tsv'.format(
-            date.year, str(date.month).zfill(2), str(date.day).zfill(2), args.sentiment_method
+        scores = pd.read_csv('data/sentiment_scores/{}_sentiment_{}{}{}_{}.tsv'.format(
+            args.platform, date.year, str(date.month).zfill(2), str(date.day).zfill(2), args.sentiment_method
         ), sep='\t')
 
         geo_df = pd.read_csv(args.geo_path+'{}-{}-{}.tsv.gz'.format(
@@ -76,7 +76,7 @@ def get_data(date, args):
         ), sep=',', usecols=['id', 'sender_id']+args.geo_vars).drop_duplicates()
 
         if len(args.keywords) > 0 or args.lang_level:
-            text_df = pd.read_csv(args.text_path+'{}{}{}.tsv.gz'.format(
+            text_df = pd.read_csv(args.text_path+'text_{}{}{}.tsv.gz'.format(
                 date.year, str(date.month).zfill(2), str(date.day).zfill(2)
             ), sep='\t', usecols=['id', 'lang', args.text_field])
 
