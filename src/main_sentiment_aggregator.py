@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--end_date', default='2020-09-30', type=str, help='End date')
     parser.add_argument('--incl_keywords', nargs='*', default='', help='Which keywords do you want to include in the subset?')
     parser.add_argument('--excl_keywords', nargs='*', default='', help='Which keywords do you want to exclude in the subset?')
-    parser.add_argument('--text_field', default='tweet_text_keywords', help='Which text field to use for keyword matching?')
+    parser.add_argument('--text_field', default='text_keywords', help='Which text field to use for keyword matching?')
     parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
 
