@@ -53,6 +53,9 @@ def check_args(args):
         args.name_ext
     )
 
+    if args.subset_usernames_file != '':
+        args.usernames = [elem for elem in open(args.subset_usernames_file).read().split("\n") if elem != '']
+
     return args
 
 def get_dates(args):
@@ -73,7 +76,8 @@ def get_data(date, args):
 
         geo_df = pd.read_csv(args.geo_path+'{}-{}-{}.tsv.gz'.format(
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-        ), sep=',', usecols=['id', 'sender_id']+args.geo_vars).drop_duplicates()
+        ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars).drop_duplicates()
+        geo_df.rename(columns={'tweet_id':'id'}, inplace=True)
 
         if len(args.keywords) > 0 or args.lang_level:
             text_df = pd.read_csv(args.text_path+'text_{}{}{}.tsv.gz'.format(
@@ -82,11 +86,27 @@ def get_data(date, args):
 
     except:
         print("\nNo data for {}.".format(date))
-        return pd.DataFrame()
+        return pd.DataFrame({
+            'id': pd.Series([], dtype='str'),
+            'sender_id': pd.Series([], dtype='str'),
+            'lang': pd.Series([], dtype='str'),
+            'day': pd.Series([], dtype='int'),
+            'month': pd.Series([], dtype='int'),
+            'year': pd.Series([], dtype='int'),
+            'score': pd.Series([], dtype='float'),
+            args.text_field: pd.Series([], dtype='str'),
+            'country': pd.Series([], dtype='str'),
+            'admin1_id': pd.Series([], dtype='str'),
+            'admin2_id': pd.Series([], dtype='str')
+        })
+
+        pd.DataFrame(columns = ['id', 'sender_id', 'lang', 'date', 'day', 'month', 'year', 'score', args.text_field]+args.geo_vars)
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
     if len(args.countries)>0:
         geo_df = geo_df[geo_df['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
+    if args.subset_usernames_file != '':
+        geo_df = geo_df[geo_df['sender_id'].isin(args.usernames)].reset_index(drop=True)
     df = pd.merge(geo_df, scores, how='inner', on='id')
     del scores, geo_df
 
@@ -113,6 +133,7 @@ def get_data(date, args):
     df['day'] = dtindex.day
     df['month'] = dtindex.month
     df['year'] = dtindex.year
+    del df['date']
 
     for var in args.geo_vars:
         df[var].fillna(0, inplace=True)
@@ -120,47 +141,39 @@ def get_data(date, args):
     return df
 
 def groupby_to_ind(df, args):
-    if df.shape[0]==0:
-        return pd.DataFrame()
-    else:
-        df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
-        df = pd.DataFrame({
-            'count': df['id'].count(),
-            'score': df['score'].mean(),
-        }).reset_index()
-        return df
+    df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
+    df = pd.DataFrame({
+        'count': df['id'].count(),
+        'score': df['score'].mean(),
+    }).reset_index()
+    return df
 
 def weighted_groupby(df, args, ind_level=True, prefix=""):
-    if df.shape[0]==0:
-        return pd.DataFrame()
-    else:
-        if ind_level:
-            vars = ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars
-        else:
-            vars = args.time_vars+args.geo_vars+args.other_gb_vars
-        df = df.groupby(vars)
-        df = pd.DataFrame({
-            prefix+'count': df['count'].sum(),
-            prefix+'score': df.apply(lambda x: np.average(x['score'], weights=x['count']))
-        }).reset_index()
-        return df
-
-def quantiles_groupby(df, args, prefix=""):
-    if df.shape[0]==0:
-        return pd.DataFrame()
+    if ind_level:
+        vars = ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars
     else:
         vars = args.time_vars+args.geo_vars+args.other_gb_vars
-        df = df.groupby(vars)
-        df = pd.DataFrame({
-            prefix+'count': df['sender_id'].count(),
-            prefix+'score': df['score'].mean(),
-            prefix+'score_10q': df['score'].quantile(0.1),
-            prefix+'score_25q': df['score'].quantile(0.25),
-            prefix+'score_50q': df['score'].quantile(0.5),
-            prefix+'score_75q': df['score'].quantile(0.75),
-            prefix+'score_90q': df['score'].quantile(0.9),
-        }).reset_index()
-        return df
+    df = df.groupby(vars)
+    df = pd.DataFrame({
+        prefix+'count': df['count'].sum(),
+        prefix+'score': df.apply(lambda x: np.average(x['score'], weights=x['count']))
+    }).reset_index()
+    df[prefix+'score'] = pd.to_numeric(df[prefix+'score'])
+    return df
+
+def quantiles_groupby(df, args, prefix=""):
+    vars = args.time_vars+args.geo_vars+args.other_gb_vars
+    df = df.groupby(vars)
+    df = pd.DataFrame({
+        prefix+'count': df['sender_id'].count(),
+        prefix+'score': df['score'].mean(),
+        prefix+'score_10q': df['score'].quantile(0.1),
+        prefix+'score_25q': df['score'].quantile(0.25),
+        prefix+'score_50q': df['score'].quantile(0.5),
+        prefix+'score_75q': df['score'].quantile(0.75),
+        prefix+'score_90q': df['score'].quantile(0.9),
+    }).reset_index()
+    return df
 
 def aggregate_sentiment(df, args):
     if args.ind_level:
