@@ -1,4 +1,4 @@
-# python3 src/setup_emb_clf.py --overwrite_embeddings True --max_seq_length 64
+# python3 src/setup_emb_clf.py --max_seq_length 64
 
 import pandas as pd
 import numpy as np
@@ -15,8 +15,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--emb_model', type=str, default='stsb-xlm-r-multilingual', help='embedding model')
-    parser.add_argument('--overwrite_embeddings', default=False, type=bool, help='Rerun the embeddings?')
-    parser.add_argument('--max_seq_length', type=int, default=32, help='maximum sequence length')
+    parser.add_argument('--max_seq_length', type=int, default=64, help='maximum sequence length')
     parser.add_argument('--train_size', default=0.8, type=float, help='What is the size of the training set?')
     parser.add_argument('--max_iter', type=int, default=100, help='number of max iterations for model fitting')
     parser.add_argument('--reg', type=float, default=1., help='inverse regularization stregnth, smaller values specify stronger regularization.')
@@ -27,7 +26,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("Reading in training data")
-    df = pd.read_csv('data/labeled_data/training_1600000_processed_noemoticon.csv', encoding='latin', header=None, usecols=[0,5])
+    df = pd.read_csv('data/labeled_data/training.1600000.processed.noemoticon.csv', encoding='latin', header=None, usecols=[0,5])
     df.columns = ['label', 'text']
 
     print("Cleaning training data")
@@ -36,15 +35,12 @@ if __name__ == '__main__':
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
     df = df[df['text']!=''].reset_index(drop=True)
 
-    if args.overwrite_embeddings==True:
-        print("Creating Embeddings")
-        emb_model = SentenceTransformer(args.emb_model)
-        emb_model.max_seq_length = args.max_seq_length
-        embeddings = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)
-        np.save('data/labeled_data/embeddings.npy', np.array(embeddings))
-        torch.save(emb_model, 'models/emb.pkl')
-    else:
-        embeddings = np.load('data/labeled_data/embeddings.npy')
+    print("Creating Embeddings")
+    emb_model = SentenceTransformer(args.emb_model)
+    emb_model.max_seq_length = args.max_seq_length
+    embeddings = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)
+    np.save('data/labeled_data/embeddings.npy', np.array(embeddings))
+    torch.save(emb_model, 'models/emb.pkl')
 
     # Generate Training set
     print("Preparing training and test sets")
