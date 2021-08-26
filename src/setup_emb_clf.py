@@ -14,11 +14,17 @@ from utils.emb_clf_setup_utils import clean_for_content, split_train_test, train
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--emb_model', type=str, default='stsb-xlm-r-multilingual', help='embedding model')
+    parser.add_argument(
+        '--emb_model', type=str, default='stsb-xlm-r-multilingual',
+        help='embedding model: paraphrase-multilingual-mpnet-base-v2, stsb-xlm-r-multilingual, etc.'
+    )
     parser.add_argument('--max_seq_length', type=int, default=64, help='maximum sequence length')
     parser.add_argument('--train_size', default=0.8, type=float, help='What is the size of the training set?')
     parser.add_argument('--max_iter', type=int, default=100, help='number of max iterations for model fitting')
-    parser.add_argument('--reg', type=float, default=1., help='inverse regularization stregnth, smaller values specify stronger regularization.')
+    parser.add_argument(
+        '--reg', type=float, default=1.,
+        help='inverse regularization stregnth, smaller values specify stronger regularization.'
+    )
     parser.add_argument('--reg_norm', type=str, default='l2', help='regularization norm')
     parser.add_argument('--random_seed', default=123, type=int, help='random seed')
     parser.add_argument('--batch_size', default = 100, type = int, help='batch size')
@@ -39,7 +45,6 @@ if __name__ == '__main__':
     emb_model = SentenceTransformer(args.emb_model)
     emb_model.max_seq_length = args.max_seq_length
     embeddings = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)
-    np.save('data/labeled_data/embeddings.npy', np.array(embeddings))
     torch.save(emb_model, 'models/emb.pkl')
 
     # Generate Training set

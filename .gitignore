@@ -1,11 +1,12 @@
 # Folders and Files:
 data/**/*.tsv
 data/**/*.csv
-data/**/*.csv.zip
+data/**/*.zip
 data/**/*.npy
 data/**/*.txt
 data/**/*.gz
 models/**/*.pkl
+*.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
