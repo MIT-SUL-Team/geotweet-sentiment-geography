@@ -1,0 +1,118 @@
+
+----------
+
+Test Set
+Testing model...
+Got 253188 out of 320000 correct.
+Accuracy rate is 0.7912125
+Precision is 0.7871810367154644, Recall is 0.7980669442464708
+
+----------
+
+Alternative English
+Testing model...
+Got 16092 out of 18467 correct.
+Accuracy rate is 0.871392213136947
+Precision is 0.9122490412812994, Recall is 0.8351058337635519
+
+----------
+
+Alternative Portuguese
+Testing model...
+Got 8310 out of 11074 correct.
+Accuracy rate is 0.7504063572331587
+Precision is 0.7718365061590146, Recall is 0.8294223826714802
+
+----------
+
+Multilingual
+
+ ALBANIAN
+Testing model...
+Got 1349 out of 1866 correct.
+Accuracy rate is 0.7229367631296891
+Precision is 0.8809338521400778, Recall is 0.7566844919786097
+
+ BOSNIAN
+Testing model...
+Got 1477 out of 1872 correct.
+Accuracy rate is 0.7889957264957265
+Precision is 0.781387181738367, Recall is 0.859073359073359
+
+ BULGARIAN
+Testing model...
+Got 797 out of 1101 correct.
+Accuracy rate is 0.7238873751135332
+Precision is 0.7008426966292135, Recall is 0.8457627118644068
+
+ CROATIAN
+Testing model...
+Got 5648 out of 6890 correct.
+Accuracy rate is 0.8197387518142235
+Precision is 0.8666271487848252, Recall is 0.8855239248940037
+
+ ENGLISH
+Testing model...
+Got 2649 out of 3152 correct.
+Accuracy rate is 0.8404187817258884
+Precision is 0.8345363686840644, Recall is 0.879976580796253
+
+ GERMAN
+Testing model...
+Got 1518 out of 1865 correct.
+Accuracy rate is 0.8139410187667561
+Precision is 0.7667224080267558, Recall is 0.9309644670050762
+
+ HUNGARIAN
+Testing model...
+Got 3124 out of 4071 correct.
+Accuracy rate is 0.7673790223532302
+Precision is 0.9078087375300997, Recall is 0.7953586497890295
+
+ POLISH
+Testing model...
+Got 8469 out of 11049 correct.
+Accuracy rate is 0.7664947054032039
+Precision is 0.8021916268614779, Recall is 0.8297006684103458
+
+ PORTUGUESE
+Testing model...
+Got 734 out of 1315 correct.
+Accuracy rate is 0.5581749049429657
+Precision is 0.4266487213997308, Recall is 0.6716101694915254
+
+ RUSSIAN
+Testing model...
+Got 2690 out of 3592 correct.
+Accuracy rate is 0.7488864142538976
+Precision is 0.7378201908588649, Recall is 0.7944835045970795
+
+ SERBIAN
+Testing model...
+Got 222 out of 345 correct.
+Accuracy rate is 0.6434782608695652
+Precision is 0.6945812807881774, Recall is 0.698019801980198
+
+ SLOVAK
+Testing model...
+Got 5042 out of 6154 correct.
+Accuracy rate is 0.8193045173870653
+Precision is 0.8487579687843482, Recall is 0.9010501750291715
+
+ SLOVENIAN
+Testing model...
+Got 4511 out of 5927 correct.
+Accuracy rate is 0.7610933018390417
+Precision is 0.6889480692410119, Recall is 0.9125220458553792
+
+ SPANISH
+Testing model...
+Got 6658 out of 9247 correct.
+Accuracy rate is 0.7200173029090516
+Precision is 0.9431545236188951, Recall is 0.7250123092072871
+
+ SWEDISH
+Testing model...
+Got 1879 out of 2590 correct.
+Accuracy rate is 0.7254826254826254
+Precision is 0.5774260151410874, Recall is 0.8963675213675214
