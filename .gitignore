@@ -1,6 +1,7 @@
 # Folders and Files:
 data/**/*.tsv
 data/**/*.csv
+data/**/*.csv.zip
 data/**/*.npy
 data/**/*.txt
 data/**/*.gz

@@ -16,7 +16,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 import json
 
-# nltk.download("stopwords")
+nltk.download("stopwords")
 stopwords_dict = {}
 
 eng_stopwords = stopwords.words('english')
