@@ -9,7 +9,8 @@ import json
 import argparse
 import torch
 
-from utils.emb_clf_setup_utils import clean_for_content, split_train_test, train_model, test_model
+from utils.emb_clf_setup_utils import split_train_test, train_model, test_model
+from utils.data_read_in import clean_for_content
 
 if __name__ == '__main__':
 

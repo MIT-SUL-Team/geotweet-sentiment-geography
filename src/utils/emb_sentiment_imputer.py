@@ -4,21 +4,22 @@ import argparse
 import torch
 from tqdm.auto import tqdm
 import torch
+import os
+
+from utils.data_read_in import clean_for_content
 
 def create_embeddings(emb_model, df, args):
-    emb = emb_model.encode(df['text_clean'].values, show_progress_bar=True, batch_size=args.batch_size)
+    emb = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)
     torch.cuda.empty_cache()
     return emb
 
 def embedding_imputation(args):
 
-    df = pd.read_csv(
-        args.data_path+'text_{}.tsv.gz'.format(args.date), sep='\t', low_memory=False,
-        usecols=['id', 'lang', 'text_clean']
-    )
-    print("Read in data for {}: {} observations".format(args.date, df.shape[0]))
+    df = read_in(args)
 
-    df = df[df['text_clean'].notnull()].reset_index(drop=True)
+    df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
+
+    df = df[df['text'].notnull()].reset_index(drop=True)
 
     emb_model = torch.load('models/emb.pkl')
     clf_model = torch.load('models/clf.pkl')
@@ -40,6 +41,6 @@ def embedding_imputation(args):
 
     df['score'] = np.round(scores, args.score_digits)
 
-    df = df[['id', 'score']]
+    df = df[['message_id', 'score']]
 
     return df

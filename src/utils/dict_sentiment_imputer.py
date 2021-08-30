@@ -9,7 +9,7 @@ from utils.sentiment_imputer_utils import _search_trie, file_to_dict, get_words_
 
 def imputer(row, imputation_method, sentiment_dict, args):
 
-    id = row['id']
+    message_id = row['message_id']
     lang = row['lang']
     text = str(row['text_clean'])
 
@@ -80,7 +80,7 @@ def imputer(row, imputation_method, sentiment_dict, args):
 
         del text, lang
 
-        return pd.Series({'id':id, 'score':score, 'hit_count':hit_count})
+        return pd.Series({'message_id':message_id, 'score':score, 'hit_count':hit_count})
 
     else:
         print("Not valid imputation method")
@@ -104,7 +104,7 @@ def parallel_imputation(args, imputation_method):
 
         df_split = pd.read_csv(
             os.path.join(args.data_path, 'text_{}.tsv.gz'.format(args.date)), sep='\t', low_memory=False,
-            nrows=args.max_rows, skiprows=range(1, i*args.max_rows+1), usecols=['id', 'lang', 'text_clean']
+            nrows=args.max_rows, skiprows=range(1, i*args.max_rows+1), usecols=['message_id', 'lang', 'text_clean']
         )
         df_split = np.array_split(df_split, args.nb_cores)
         pool = Pool(args.nb_cores)

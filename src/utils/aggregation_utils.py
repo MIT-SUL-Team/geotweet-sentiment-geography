@@ -76,18 +76,17 @@ def get_data(date, args):
 
         geo_df = pd.read_csv(args.geo_path+'{}-{}-{}.tsv.gz'.format(
             date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-        ), sep=',', usecols=['tweet_id', 'sender_id']+args.geo_vars).drop_duplicates()
-        geo_df.rename(columns={'tweet_id':'id'}, inplace=True)
+        ), sep=',', usecols=['message_id', 'sender_id']+args.geo_vars).drop_duplicates()
 
         if len(args.keywords) > 0 or args.lang_level:
             text_df = pd.read_csv(args.text_path+'text_{}{}{}.tsv.gz'.format(
                 date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-            ), sep='\t', usecols=['id', 'lang', args.text_field])
+            ), sep='\t', usecols=['message_id', 'lang', args.text_field])
 
     except:
         print("\nNo data for {}.".format(date))
         return pd.DataFrame({
-            'id': pd.Series([], dtype='str'),
+            'message_id': pd.Series([], dtype='str'),
             'sender_id': pd.Series([], dtype='str'),
             'lang': pd.Series([], dtype='str'),
             'day': pd.Series([], dtype='int'),
@@ -100,14 +99,14 @@ def get_data(date, args):
             'admin2_id': pd.Series([], dtype='str')
         })
 
-        pd.DataFrame(columns = ['id', 'sender_id', 'lang', 'date', 'day', 'month', 'year', 'score', args.text_field]+args.geo_vars)
+        pd.DataFrame(columns = ['message_id', 'sender_id', 'lang', 'date', 'day', 'month', 'year', 'score', args.text_field]+args.geo_vars)
 
     scores = scores[scores['score'].notnull()].reset_index(drop=True)
     if len(args.countries)>0:
         geo_df = geo_df[geo_df['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
     if args.subset_usernames_file != '':
         geo_df = geo_df[geo_df['sender_id'].isin(args.usernames)].reset_index(drop=True)
-    df = pd.merge(geo_df, scores, how='inner', on='id')
+    df = pd.merge(geo_df, scores, how='inner', on='message_id')
     del scores, geo_df
 
     if len(args.keywords) > 0 or args.lang_level:
@@ -125,7 +124,7 @@ def get_data(date, args):
             del text_df['drop']
 
         del text_df[args.text_field]
-        df = pd.merge(df, text_df, how='inner', on='id')
+        df = pd.merge(df, text_df, how='inner', on='message_id')
         del text_df
 
     df['date'] = date
@@ -143,7 +142,7 @@ def get_data(date, args):
 def groupby_to_ind(df, args):
     df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
     df = pd.DataFrame({
-        'count': df['id'].count(),
+        'count': df['message_id'].count(),
         'score': df['score'].mean(),
     }).reset_index()
     return df

@@ -33,8 +33,8 @@ def imputer(args, imputation_method):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('platform', help='Which social media data are we using (twitter, weibo)?')
-    parser.add_argument('date', help='What day do you want to impute sentiment for?')
+    parser.add_argument('filename', help='What filename do you want to impute sentiment for?')
+    parser.add_argument('--platform', default='', help='Which social media data are we using (twitter, weibo)?')
     parser.add_argument('--data_path', default='', type=str, help='path to data')
     parser.add_argument('--dict_methods', nargs='*', default='liwc emoji hedono', help='Which dict techniques do you want to use?')
     parser.add_argument('--emb_methods', nargs='*', default='bert', help='Which embedding techniques do you want to use?')
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print("\n\nRunning for {}".format(args.date))
+    print("\n\nRunning for {}".format(args.filename))
 
     for method in args.dict_methods + args.emb_methods:
         imputer(args, method)
