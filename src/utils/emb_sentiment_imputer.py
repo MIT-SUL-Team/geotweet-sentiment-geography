@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 import torch
 import os
 
-from utils.data_read_in import clean_for_content
+from utils.data_read_in import read_in, clean_for_content
 
 def create_embeddings(emb_model, df, args):
     emb = emb_model.encode(df['text'].values, show_progress_bar=True, batch_size=args.batch_size)

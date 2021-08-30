@@ -1,4 +1,4 @@
-# usage: python3 src/main_sentiment_imputer.py twitter 20200101 --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
+# usage: python3 src/main_sentiment_imputer.py 2019_11_18_23.csv.gz --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
 
 import pandas as pd
 import numpy as np
@@ -36,10 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('filename', help='What filename do you want to impute sentiment for?')
     parser.add_argument('--platform', default='', help='Which social media data are we using (twitter, weibo)?')
     parser.add_argument('--data_path', default='', type=str, help='path to data')
+    parser.add_argument('--output_path', default='data/sentiment_scores/', type=str, help='path to output')
     parser.add_argument('--dict_methods', nargs='*', default='liwc emoji hedono', help='Which dict techniques do you want to use?')
     parser.add_argument('--emb_methods', nargs='*', default='bert', help='Which embedding techniques do you want to use?')
     parser.add_argument('--random_seed', default=123, type=int, help='random seed')
-    parser.add_argument('--output_path', default='data/sentiment_scores/', type=str, help='path to output')
     parser.add_argument('--score_digits', default=6, type=int, help='how many digits to the output score')
 
     # Emb based parameters
