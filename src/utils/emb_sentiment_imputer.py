@@ -17,6 +17,7 @@ def embedding_imputation(args):
 
     df = read_in(args)
 
+    print("Cleaning data:")
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
     df = df[df['text'].notnull()].reset_index(drop=True)
 
@@ -27,9 +28,10 @@ def embedding_imputation(args):
 
     predictions, scores = [], []
 
+    print("Imputing Sentiment:")
     for i in range(nb_iters):
 
-        print("Iteration {} of {}...".format(i+1, nb_iters))
+        print("Chunk {} of {}...".format(i+1, nb_iters))
         df_split = df.iloc[i*args.max_rows:(i+1)*args.max_rows, :]
 
         embeddings = create_embeddings(emb_model, df_split, args)
