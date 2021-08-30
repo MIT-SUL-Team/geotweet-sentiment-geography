@@ -25,12 +25,13 @@ add_stopwords += ['im', 'th', 'fr', 'bc', 'em', 'da'] # additional stopwords
 stopwords_dict['en'] = list(set(eng_stopwords+add_stopwords))
 
 def read_in(args):
-    
+
     df = pd.read_csv(
         os.path.join(args.data_path, args.filename), sep='\t', low_memory=False,
         usecols=['message_id', 'tweet_lang', 'text']
     )
     df.rename(columns={'tweet_lang':'lang'}, inplace=True)
+    df = df[df['text'].notnull()].reset_index(drop=True)
     print("Read in data for {}: {} observations".format(args.filename, df.shape[0]))
     return df
 
