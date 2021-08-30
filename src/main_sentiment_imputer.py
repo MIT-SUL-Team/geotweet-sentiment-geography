@@ -25,7 +25,7 @@ def imputer(args, imputation_method):
         df = embedding_imputation(args)
 
     df.to_csv(
-        args.output_path+'{}_sentiment_{}'.format(imputation_method, args.filename), sep='\t', index=False
+        os.path.join(args.output_path, '{}_sentiment_{}'.format(imputation_method, args.filename)), sep='\t', index=False
     )
     print("Done! Imputed {} scores.".format(df.shape[0]))
     del df

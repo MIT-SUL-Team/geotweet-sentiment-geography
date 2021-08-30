@@ -18,7 +18,6 @@ def embedding_imputation(args):
     df = read_in(args)
 
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
-
     df = df[df['text'].notnull()].reset_index(drop=True)
 
     emb_model = torch.load('models/emb.pkl')
