@@ -7,7 +7,7 @@ import multiprocessing
 import time
 import glob
 import torch
-from tqdm.quto import tqdm
+from tqdm.auto import tqdm
 
 def imputer(file, args, imputation_method):
 
