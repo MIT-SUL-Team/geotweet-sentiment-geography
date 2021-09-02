@@ -3,15 +3,15 @@ import os
 import re
 import html
 
-def read_in(args, cols):
+def read_in(file, args, cols):
 
     df = pd.read_csv(
-        os.path.join(args.data_path, args.filename), sep='\t', low_memory=False, lineterminator='\n',
+        os.path.join(args.data_path, file), sep='\t', low_memory=False, lineterminator='\n',
         usecols=cols
     )
     df.rename(columns={'tweet_lang':'lang'}, inplace=True)
     df = df[df['text'].notnull()].reset_index(drop=True)
-    print("Read in data for {}: {} observations".format(args.filename, df.shape[0]))
+    print("Read in data for {}: {} observations".format(file, df.shape[0]))
     return df
 
 def deEmojify(text):

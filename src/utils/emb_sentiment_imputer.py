@@ -11,16 +11,16 @@ def create_embeddings(emb_model, df, args):
     torch.cuda.empty_cache()
     return emb
 
-def embedding_imputation(args):
+def embedding_imputation(file, args):
 
-    df = read_in(args, cols=['message_id', 'tweet_lang', 'text'])
+    df = read_in(file, args, cols=['message_id', 'tweet_lang', 'text'])
 
     print("Cleaning data:")
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
     df = df[df['text'].notnull()].reset_index(drop=True)
 
-    emb_model = torch.load('models/emb.pkl')
-    clf_model = torch.load('models/clf.pkl')
+    # emb_model = torch.load('models/emb.pkl')
+    # clf_model = torch.load('models/clf.pkl')
 
     nb_iters = int(np.ceil(df.shape[0]/args.max_rows))
 
@@ -32,10 +32,10 @@ def embedding_imputation(args):
         print("Chunk {} of {}...".format(i+1, nb_iters))
         df_split = df.iloc[i*args.max_rows:(i+1)*args.max_rows, :]
 
-        embeddings = create_embeddings(emb_model, df_split, args)
+        embeddings = create_embeddings(args.emb_model, df_split, args)
 
-        predictions += list(clf_model.predict(embeddings))
-        scores += list(clf_model.predict_proba(embeddings)[:,1])
+        # predictions += list(args.clf_model.predict(embeddings))
+        scores += list(args.clf_model.predict_proba(embeddings)[:,1])
         del embeddings
 
     df['score'] = np.round(scores, args.score_digits)

@@ -4,8 +4,11 @@ import pandas as pd
 import os
 import argparse
 import multiprocessing
+import time
+import glob
+import torch
 
-def imputer(args, imputation_method):
+def imputer(file, args, imputation_method):
 
     print("\n{}:".format(imputation_method.upper()))
 
@@ -13,15 +16,13 @@ def imputer(args, imputation_method):
         print("Not a proper imputation method. Skipping.")
 
     elif imputation_method in args.dict_methods:
-        from utils.dict_sentiment_imputer import parallel_imputation
-        df = parallel_imputation(args, imputation_method=imputation_method)
+        df = parallel_imputation(file, args, imputation_method=imputation_method)
 
     elif imputation_method in args.emb_methods:
-        from utils.emb_sentiment_imputer import embedding_imputation
-        df = embedding_imputation(args)
+        df = embedding_imputation(file, args)
 
     df.to_csv(
-        os.path.join(args.output_path, '{}_sentiment_{}'.format(imputation_method, args.filename)), sep='\t', index=False
+        os.path.join(args.output_path, '{}_sentiment_{}'.format(imputation_method, file)), sep='\t', index=False
     )
     print("Done! Imputed {} scores.".format(df.shape[0]))
     del df
@@ -29,7 +30,7 @@ def imputer(args, imputation_method):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', help='What filename do you want to impute sentiment for?')
+    parser.add_argument('--filename', default='', help='What filename do you want to impute sentiment for?')
     parser.add_argument('--platform', default='', help='Which social media data are we using (twitter, weibo)?')
     parser.add_argument('--data_path', default='', type=str, help='path to data')
     parser.add_argument('--output_path', default='data/sentiment_scores/', type=str, help='path to output')
@@ -47,7 +48,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print("\n\nRunning for {}".format(args.filename))
+    if args.filename == '':
+        args.files = [os.path.basename(elem) for elem in glob.glob(args.data_path)]
+    else:
+        args.files = [args.filename]
 
-    for method in args.dict_methods + args.emb_methods:
-        imputer(args, method)
+    if len(args.dict_methods)>0:
+        from utils.dict_sentiment_imputer import parallel_imputation
+    if len(args.emb_methods):
+        from utils.emb_sentiment_imputer import embedding_imputation
+    if 'bert' in args.emb_methods:
+        args.emb_model = torch.load('models/emb.pkl')
+        args.clf_model = torch.load('models/clf.pkl')
+
+    for file in args.files:
+        print("\n\nRunning for {}".format(file))
+
+        for method in args.dict_methods + args.emb_methods:
+            imputer(file, args, method)
