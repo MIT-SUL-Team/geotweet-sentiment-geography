@@ -48,11 +48,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.filename == '':
-        args.files = [os.path.basename(elem) for elem in glob.glob(args.data_path)]
-    else:
-        args.files = [args.filename]
-
     if len(args.dict_methods)>0:
         from utils.dict_sentiment_imputer import parallel_imputation
     if len(args.emb_methods):
@@ -60,6 +55,11 @@ if __name__ == '__main__':
     if 'bert' in args.emb_methods:
         args.emb_model = torch.load('models/emb.pkl')
         args.clf_model = torch.load('models/clf.pkl')
+
+    if args.filename == '':
+        args.files = [os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))]
+    else:
+        args.files = [args.filename]
 
     for file in args.files:
         print("\n\nRunning for {}".format(file))
