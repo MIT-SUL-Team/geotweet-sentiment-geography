@@ -69,4 +69,4 @@ if __name__ == '__main__':
         for method in args.dict_methods + args.emb_methods:
             imputer(file, args, method)
 
-        print("Runtime: {}".format(time.time() - start))
+        print("Runtime: {} minutes".format(round((time.time() - start)/60, 1)))
