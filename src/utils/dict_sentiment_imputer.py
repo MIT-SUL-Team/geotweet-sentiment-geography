@@ -234,7 +234,7 @@ def by_chunk(df_split, imputation_method, sentiment_dict, args):
     df_sentiment = df_split.apply(lambda row: imputer(row, imputation_method=imputation_method, sentiment_dict=sentiment_dict, args=args), axis=1)
     return df_sentiment
 
-def parallel_imputation(args, imputation_method):
+def parallel_imputation(file, args, imputation_method):
 
     sentiment_dict = file_to_dict(imputation_method)
 

@@ -57,12 +57,16 @@ if __name__ == '__main__':
         args.clf_model = torch.load('models/clf.pkl')
 
     if args.filename == '':
-        args.files = [os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))]
+        args.files = sorted([os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))])
     else:
         args.files = [args.filename]
 
     for file in args.files:
+
+        start = time.time()
         print("\n\nRunning for {}".format(file))
 
         for method in args.dict_methods + args.emb_methods:
             imputer(file, args, method)
+
+        print("Runtime: {}".format(time.time() - start))
