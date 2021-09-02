@@ -61,7 +61,7 @@ if __name__ == '__main__':
     else:
         args.files = [args.filename]
 
-    for file in args.files:
+    for file in tqdm(args.files):
 
         start = time.time()
         print("\n\nRunning for {}".format(file))
@@ -69,4 +69,4 @@ if __name__ == '__main__':
         for method in args.dict_methods + args.emb_methods:
             imputer(file, args, method)
 
-        print("Runtime: {} minutes".format(round((time.time() - start)/60, 1)))
+        print("Runtime: {} minutes\n\n".format(round((time.time() - start)/60, 1)))
