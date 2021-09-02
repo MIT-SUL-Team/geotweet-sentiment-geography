@@ -1,26 +1,13 @@
 import pandas as pd
-import numpy as np
 import os
-import nltk
 import re
-import time
-import emoji
 import html
-from nltk.corpus import stopwords
-from nltk import SnowballStemmer
-import sys
-from sklearn.model_selection import train_test_split
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-import json
 
-def read_in(args):
+def read_in(args, cols):
 
     df = pd.read_csv(
-        os.path.join(args.data_path, args.filename), sep='\t', low_memory=False,
-        usecols=['message_id', 'tweet_lang', 'text']
+        os.path.join(args.data_path, args.filename), sep='\t', low_memory=False, lineterminator='\n',
+        usecols=cols
     )
     df.rename(columns={'tweet_lang':'lang'}, inplace=True)
     df = df[df['text'].notnull()].reset_index(drop=True)
@@ -82,6 +69,10 @@ def clean_for_keywords(string, lang, stemming):
 
     if stemming:
 
+        import nltk
+        from nltk.corpus import stopwords
+        from nltk import SnowballStemmer
+
         if 'stopwords' not in os.listdir('~/nltk_data/corpora/'):
             nltk.download("stopwords")
         stopwords_dict = {}
@@ -106,5 +97,6 @@ def clean_for_keywords(string, lang, stemming):
     return string
 
 def clean_for_emojis(string):
+    import emoji
     string = ''.join(c for c in string if c in emoji.UNICODE_EMOJI)
     return string

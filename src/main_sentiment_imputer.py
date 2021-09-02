@@ -1,15 +1,9 @@
-# usage: python3 src/main_sentiment_imputer.py 2019_11_18_23.csv.gz --data_path /home/sentiment/data-lake/twitter/processed/ --dict_methods liwc emoji --emb_methods bert
+# usage: python src/main_sentiment_imputer.py 2020_11_18_23.csv.gz --data_path /n/holyscratch01/cga/nicogj/main/ --output_path /n/cga/data/geo-tweets/cga-sbg-sentiment/2020 --dict_methods --emb_methods bert
 
 import pandas as pd
-import numpy as np
-import glob
-import os.path
+import os
 import argparse
-import sys
 import multiprocessing
-
-from utils.dict_sentiment_imputer import parallel_imputation
-from utils.emb_sentiment_imputer import embedding_imputation
 
 def imputer(args, imputation_method):
 
@@ -19,9 +13,11 @@ def imputer(args, imputation_method):
         print("Not a proper imputation method. Skipping.")
 
     elif imputation_method in args.dict_methods:
+        from utils.dict_sentiment_imputer import parallel_imputation
         df = parallel_imputation(args, imputation_method=imputation_method)
 
     elif imputation_method in args.emb_methods:
+        from utils.emb_sentiment_imputer import embedding_imputation
         df = embedding_imputation(args)
 
     df.to_csv(

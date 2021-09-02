@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-import argparse
 import torch
 from tqdm.auto import tqdm
-import torch
 import os
 
 from utils.data_read_in import read_in, clean_for_content
@@ -15,7 +13,7 @@ def create_embeddings(emb_model, df, args):
 
 def embedding_imputation(args):
 
-    df = read_in(args)
+    df = read_in(args, cols=['message_id', 'tweet_lang', 'text'])
 
     print("Cleaning data:")
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
