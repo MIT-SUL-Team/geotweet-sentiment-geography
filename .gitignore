@@ -5,6 +5,10 @@ data/**/*.zip
 data/**/*.npy
 data/**/*.txt
 data/**/*.gz
+data/**/*.shp
+data/**/*.shx
+data/**/*.dbf
+data/**/*.prj
 models/**/*.pkl
 *.out
 
