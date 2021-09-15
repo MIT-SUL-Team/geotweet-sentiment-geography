@@ -3,14 +3,14 @@ import os
 import re
 import html
 
-def read_in(file, args, cols):
+def read_in(file, path, cols):
 
     df = pd.read_csv(
-        os.path.join(args.data_path, file), sep='\t', low_memory=False, lineterminator='\n',
+        os.path.join(path, file), sep='\t', low_memory=False, lineterminator='\n',
         usecols=cols
     )
-    df.rename(columns={'tweet_lang':'lang'}, inplace=True)
-    df = df[df['text'].notnull()].reset_index(drop=True)
+    if "tweet_lang" in list(df):
+        df.rename(columns={'tweet_lang':'lang'}, inplace=True)
     print("Read in data for {}: {} observations".format(file, df.shape[0]))
     return df
 
