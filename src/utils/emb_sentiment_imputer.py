@@ -13,11 +13,12 @@ def create_embeddings(emb_model, df, args):
 
 def embedding_imputation(file, args):
 
-    df = read_in(file, args, cols=['message_id', 'tweet_lang', 'text'])
+    df = read_in(file, args.data_path, cols=['message_id', 'tweet_lang', 'text'])
+    df = df[df['text'].notnull()].reset_index(drop=True)
 
     print("Cleaning data:")
     df['text'] = [clean_for_content(text, lang) for text, lang in tqdm(zip(df['text'], df['lang']), total=df.shape[0])]
-    df = df[df['text'].notnull()].reset_index(drop=True)
+    df = df[df['text']!=""].reset_index(drop=True)
 
     # emb_model = torch.load('models/emb.pkl')
     # clf_model = torch.load('models/clf.pkl')

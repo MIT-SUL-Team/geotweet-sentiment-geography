@@ -1,4 +1,4 @@
-# usage: python src/main_sentiment_imputer.py 2020_11_18_23.csv.gz --data_path /n/holyscratch01/cga/nicogj/main/ --output_path /n/cga/data/geo-tweets/cga-sbg-sentiment/2020 --dict_methods --emb_methods bert
+# usage: python src/main_sentiment_imputer.py --data_path /n/holyscratch01/cga/nicogj/main/ --output_path /n/cga/data/geo-tweets/cga-sbg-sentiment/2020 --dict_methods --emb_methods bert
 
 import pandas as pd
 import os
