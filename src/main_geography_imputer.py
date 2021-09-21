@@ -87,8 +87,8 @@ if __name__ == '__main__':
         args.files = [args.filename]
 
     for file in tqdm(args.files):
-        # try:
-        impute_geography(file, args)
-        # except:
-        #     print("Could not impute geography on {}".format(file))
-        #     continue
+        try:
+            impute_geography(file, args)
+        except:
+            print("Could not impute geography on {}".format(file))
+            continue
