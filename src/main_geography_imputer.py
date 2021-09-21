@@ -14,8 +14,6 @@ def impute_geography(file, args):
 
     # Read in Twitter data
     df = read_in(file, args.data_path, cols=['message_id', 'latitude', 'longitude'])
-
-    # Read in to Omnisci
     args.c.execute(
         '''
         DROP TABLE IF EXISTS geotweets;
@@ -23,15 +21,10 @@ def impute_geography(file, args):
     )
     args.con.load_table("geotweets", df, create='infer', method='arrow')
 
-    # Impute geography
+    # Save with geography
     args.c.execute(
         '''
-        DROP TABLE IF EXISTS geotweets_geography;
-        '''
-    )
-    args.c.execute(
-        '''
-        CREATE TABLE geotweets_geography AS (
+        COPY (
             SELECT
                 a.message_id,
                 b.OBJECTID,
@@ -47,21 +40,10 @@ def impute_geography(file, args):
             WHERE ST_Intersects(
                 b.omnisci_geo, ST_SetSRID(ST_Point(a.longitude, a.latitude), 4326)
             )
-        );
-        '''
+        )
+        TO '{}' WITH (delimiter = '\t', quoted = 'true', header='true');
+        '''.format(os.path.join(args.output_path, "geography_{}".format(file.replace('.gz', '')))).replace('\n', ' ')
     )
-
-    # Save as CSV
-    temp = pd.read_sql(
-        '''
-        SELECT *
-        FROM geotweets_geography;
-        ''', args.con
-    )
-    temp.to_csv(
-        os.path.join(args.output_path, 'geography_{}'.format(file)), sep='\t', index=False
-    )
-
 
 if __name__ == '__main__':
 
