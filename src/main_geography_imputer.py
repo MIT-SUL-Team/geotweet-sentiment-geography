@@ -1,4 +1,4 @@
-# usage: python src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/
+# usage: python src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/ --output_path /n/holyscratch01/cga/nicogj/geo_output/ --host_name holygpu7c26204.rc.fas.harvard.edu --port_number 7083
 
 import argparse
 import pandas as pd
@@ -14,12 +14,7 @@ def impute_geography(file, args):
 
     # Read in Twitter data
     df = read_in(file, args.data_path, cols=['message_id', 'latitude', 'longitude'])
-    args.c.execute(
-        '''
-        DROP TABLE IF EXISTS geotweets;
-        '''
-    )
-    args.con.load_table("geotweets", df, create='infer', method='arrow')
+    args.con.load_table("geotweets_{}".format(file.replace('.csv.gz', '')), df, create='infer', method='arrow')
 
     # Save with geography
     args.c.execute(
@@ -35,15 +30,26 @@ def impute_geography(file, args):
                 b.NAME_1,
                 b.ID_2,
                 b.NAME_2
-            FROM geotweets AS a,
+            FROM geotweets_{} AS a,
             adm2 AS b
             WHERE ST_Intersects(
                 b.omnisci_geo, ST_SetSRID(ST_Point(a.longitude, a.latitude), 4326)
             )
         )
         TO '{}' WITH (delimiter = '\t', quoted = 'true', header='true');
-        '''.format(os.path.join(args.output_path, "geography_{}".format(file.replace('.gz', '')))).replace('\n', ' ')
+        '''.format(
+            file.replace('.csv.gz', ''),
+            os.path.join(args.output_path, "geography_{}".format(file.replace('.gz', '')))
+        ).replace('\n', ' ')
     )
+
+    args.c.execute(
+        '''
+        DROP TABLE geotweets_{};
+        '''.format(file.replace('.csv.gz', ''))
+    )
+    del df
+
 
 if __name__ == '__main__':
 
@@ -72,5 +78,5 @@ if __name__ == '__main__':
         try:
             impute_geography(file, args)
         except:
-            print("Could not impute geography on {}".format(file))
+            print("Could not impute geography on {}\n".format(file))
             continue
