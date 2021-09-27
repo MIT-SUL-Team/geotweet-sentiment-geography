@@ -7,10 +7,13 @@ import glob
 import os
 import numpy as np
 from tqdm.auto import tqdm
+import time
 
 from utils.data_read_in import read_in
 
 def impute_geography(file, args):
+
+    start_time = time.time()
 
     # Read in Twitter data
     df = read_in(file, args.data_path, cols=['message_id', 'latitude', 'longitude'])
@@ -31,7 +34,7 @@ def impute_geography(file, args):
                 b.ID_2,
                 b.NAME_2
             FROM geotweets_{} AS a,
-            adm2 AS b
+            admin2 AS b
             WHERE ST_Intersects(
                 b.omnisci_geo, ST_SetSRID(ST_Point(a.longitude, a.latitude), 4326)
             )
@@ -50,6 +53,7 @@ def impute_geography(file, args):
     )
     del df
 
+    print("Imputed geography for {} in {} min".format(file, round((time.time()-start_time)/60, 1)))
 
 if __name__ == '__main__':
 
@@ -68,6 +72,34 @@ if __name__ == '__main__':
     )
     args.c = args.con.cursor()
     print("Connected", args.con)
+
+    if "adm2" in args.con.get_tables():
+        args.c.execute(
+            '''
+            DROP TABLE IF EXISTS admin2;
+            '''
+        )
+        args.c.execute(
+            '''
+            CREATE TABLE admin2 AS
+            SELECT
+                OBJECTID,
+                ID_0,
+                NAME_0,
+                ISO,
+                ID_1,
+                NAME_1,
+                ID_2,
+                NAME_2,
+                omnisci_geo
+            FROM adm2;
+            '''.replace('\n', ' ')
+        )
+        args.c.execute(
+            '''
+            DROP TABLE adm2;
+            '''
+        )
 
     if args.filename == '':
         args.files = sorted([os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))])
