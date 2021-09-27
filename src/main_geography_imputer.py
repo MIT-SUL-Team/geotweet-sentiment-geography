@@ -1,4 +1,4 @@
-# usage: python src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/ --output_path /n/holyscratch01/cga/nicogj/geo_output/ --host_name holygpu7c26204.rc.fas.harvard.edu --port_number 7083
+# usage: python src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/ --output_path /n/holyscratch01/cga/nicogj/geo_output/ --host_name holygpu7c26306.rc.fas.harvard.edu --port_number 8874
 
 import argparse
 import pandas as pd
@@ -100,6 +100,13 @@ if __name__ == '__main__':
             DROP TABLE adm2;
             '''
         )
+    for table in args.con.get_tables():
+        if table[:2] = "20":
+            args.c.execute(
+                '''
+                DROP TABLE {};
+                '''
+            ).format(table)
 
     if args.filename == '':
         args.files = sorted([os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))])
