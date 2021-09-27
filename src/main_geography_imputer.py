@@ -1,4 +1,4 @@
-# usage: python src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/ --output_path /n/holyscratch01/cga/nicogj/geo_output/ --host_name holygpu7c26306.rc.fas.harvard.edu --port_number 8874
+# usage: python -u src/main_geography_imputer.py --data_path /n/holyscratch01/cga/nicogj/geo_input/ --output_path /n/holyscratch01/cga/nicogj/geo_output/ --host_name holygpu7c26306.rc.fas.harvard.edu --port_number 8874
 
 import argparse
 import pandas as pd
@@ -101,7 +101,7 @@ if __name__ == '__main__':
             '''
         )
     for table in args.con.get_tables():
-        if table[:2] = "20":
+        if table[:2] == "20":
             args.c.execute(
                 '''
                 DROP TABLE {};
