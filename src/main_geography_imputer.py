@@ -100,8 +100,9 @@ if __name__ == '__main__':
             DROP TABLE adm2;
             '''
         )
+
     for table in args.con.get_tables():
-        if table[:2] == "20":
+        if table[:10] == "geotweets_":
             args.c.execute(
                 '''
                 DROP TABLE {};
