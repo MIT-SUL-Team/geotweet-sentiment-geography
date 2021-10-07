@@ -17,7 +17,7 @@ def impute_geography(file, args):
 
     # Read in Twitter data
     df = read_in(file, args.data_path, cols=['message_id', 'latitude', 'longitude'])
-    args.con.load_table("geotweets_{}".format(file.replace('.csv.gz', '')), df, create='infer', method='arrow')
+    args.con.load_table("geotweets", df, create='infer', method='arrow')
 
     # Save with geography
     args.c.execute(
@@ -33,7 +33,7 @@ def impute_geography(file, args):
                 b.NAME_1,
                 b.ID_2,
                 b.NAME_2
-            FROM geotweets_{} AS a,
+            FROM geotweets AS a,
             admin2 AS b
             WHERE ST_Intersects(
                 b.omnisci_geo, ST_SetSRID(ST_Point(a.longitude, a.latitude), 4326)
@@ -41,16 +41,11 @@ def impute_geography(file, args):
         )
         TO '{}' WITH (delimiter = '\t', quoted = 'true', header='true');
         '''.format(
-            file.replace('.csv.gz', ''),
             os.path.join(args.output_path, "geography_{}".format(file.replace('.gz', '')))
         ).replace('\n', ' ')
     )
 
-    args.c.execute(
-        '''
-        DROP TABLE geotweets_{};
-        '''.format(file.replace('.csv.gz', ''))
-    )
+    args.c.execute("DROP TABLE geotweets;")
     del df
 
     print("Imputed geography for {} in {} min".format(file, round((time.time()-start_time)/60, 1)))
@@ -76,11 +71,6 @@ if __name__ == '__main__':
     if "adm2" in args.con.get_tables():
         args.c.execute(
             '''
-            DROP TABLE IF EXISTS admin2;
-            '''
-        )
-        args.c.execute(
-            '''
             CREATE TABLE admin2 AS
             SELECT
                 OBJECTID,
@@ -95,19 +85,9 @@ if __name__ == '__main__':
             FROM adm2;
             '''.replace('\n', ' ')
         )
-        args.c.execute(
-            '''
-            DROP TABLE adm2;
-            '''
-        )
 
-    for table in args.con.get_tables():
-        if table[:10] == "geotweets_":
-            args.c.execute(
-                '''
-                DROP TABLE {};
-                '''
-            ).format(table)
+    args.c.execute("DROP TABLE IF EXISTS adm2;")
+    args.c.execute("DROP TABLE IF EXISTS geotweets;")
 
     if args.filename == '':
         args.files = sorted([os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))])
