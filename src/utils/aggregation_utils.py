@@ -4,8 +4,9 @@ import glob
 import os.path
 import sys
 import datetime
-from tqdm.auto import tqdm
 import re
+
+from utils.data_read_in import read_in
 
 def check_args(args):
 
@@ -15,15 +16,15 @@ def check_args(args):
     if len(args.name_ext)>0 and args.name_ext[0]!='_':
         args.name_ext = "_" + args.name_ext
 
-    if args.geo_level=='admin1':
-        args.geo_level='admin1_id'
-    if args.geo_level=='admin2':
-        args.geo_level='admin2_id'
-    geo_vars = ['country', 'admin1_id', 'admin2_id']
+    if args.geo_level=='admin1' or args.geo_level=='admin1_id':
+        args.geo_level='id_1'
+    if args.geo_level=='admin2' or args.geo_level=='admin2_id':
+        args.geo_level='id_2'
+    geo_vars = ['id_0', 'id_1', 'id_2']
     if args.geo_level not in geo_vars:
-        raise ValueError("Must provide a valid geo level \('country', 'admin1', or 'admin2'\)")
+        raise ValueError("Must provide a valid geo level \('id_0', 'admin1', or 'admin2'\)")
     args.geo_vars = geo_vars[:geo_vars.index(args.geo_level)+1]
-    args.geo_level = args.geo_level.replace("_id", "")
+    args.geo_level = "admin" + args.geo_level[-1]
 
     if args.time_level not in ['day', 'month', 'year', 'all']:
         raise ValueError("Must provide a valid time level \('day', 'month', 'year', 'all'\)")
@@ -67,89 +68,90 @@ def get_dates(args):
 
     return dates
 
-def get_data(date, args):
+def get_daily_data(date, args):
 
-    try:
-        scores = pd.read_csv('data/sentiment_scores/{}_sentiment_{}{}{}_{}.tsv'.format(
-            args.platform, date.year, str(date.month).zfill(2), str(date.day).zfill(2), args.sentiment_method
-        ), sep='\t')
+    df_day = pd.DataFrame()
 
-        geo_df = pd.read_csv(args.geo_path+'{}-{}-{}.tsv.gz'.format(
-            date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-        ), sep=',', usecols=['message_id', 'sender_id']+args.geo_vars).drop_duplicates()
+    for i in range(24):
 
-        if len(args.keywords) > 0 or args.lang_level:
-            text_df = pd.read_csv(args.text_path+'text_{}{}{}.tsv.gz'.format(
-                date.year, str(date.month).zfill(2), str(date.day).zfill(2)
-            ), sep='\t', usecols=['message_id', 'lang', args.text_field])
+        try:
 
-    except:
-        print("\nNo data for {}.".format(date))
-        return pd.DataFrame({
-            'message_id': pd.Series([], dtype='str'),
-            'sender_id': pd.Series([], dtype='str'),
-            'lang': pd.Series([], dtype='str'),
-            'day': pd.Series([], dtype='int'),
-            'month': pd.Series([], dtype='int'),
-            'year': pd.Series([], dtype='int'),
-            'score': pd.Series([], dtype='float'),
-            args.text_field: pd.Series([], dtype='str'),
-            'country': pd.Series([], dtype='str'),
-            'admin1_id': pd.Series([], dtype='str'),
-            'admin2_id': pd.Series([], dtype='str')
-        })
+            text_df = read_in(
+                file = "{}_{}_{}_{}.csv.gz".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)),
+                path = args.text_path,
+                cols = ["message_id", "user_id", "tweet_lang", "text"]
+            )
 
-        pd.DataFrame(columns = ['message_id', 'sender_id', 'lang', 'date', 'day', 'month', 'year', 'score', args.text_field]+args.geo_vars)
+            geo_df = pd.read_csv(os.path.join(args.geo_path, 'geography_{}_{}_{}_{}.csv.gz'.format(
+                date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+            )), sep='\t', usecols = ['message_id', 'ID_0', 'ISO', 'ID_1', 'ID_2'])
+            geo_df.columns = [elem.lower() for elem in list(geo_df)]
 
-    scores = scores[scores['score'].notnull()].reset_index(drop=True)
-    if len(args.countries)>0:
-        geo_df = geo_df[geo_df['country'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
-    if args.subset_usernames_file != '':
-        geo_df = geo_df[geo_df['sender_id'].isin(args.usernames)].reset_index(drop=True)
-    df = pd.merge(geo_df, scores, how='inner', on='message_id')
-    del scores, geo_df
+            sent_df = pd.read_csv(os.path.join(args.sent_path, '{}_sentiment_{}_{}_{}_{}.csv.gz'.format(
+                args.sentiment_method, date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+            )), sep='\t')
 
-    if len(args.keywords) > 0 or args.lang_level:
-        if len(args.incl_keywords)>0:
-            text_df = text_df[text_df[args.text_field].notnull()].reset_index(drop=True)
-            regex = '|'.join(args.incl_keywords)
-            text_df['keep'] = [bool(re.search(regex, elem)) for elem in text_df[args.text_field].values]
-            text_df = text_df[text_df['keep']==True].reset_index(drop=True)
-            del text_df['keep']
-        if len(args.excl_keywords)>0:
-            text_df = text_df[text_df[args.text_field].notnull()].reset_index(drop=True)
-            regex = '|'.join(args.excl_keywords)
-            text_df['drop'] = [bool(re.search(regex, elem)) for elem in text_df[args.text_field].values]
-            text_df = text_df[text_df['drop']==False].reset_index(drop=True)
-            del text_df['drop']
+            sent_df = sent_df[sent_df['score'].notnull()].reset_index(drop=True)
 
-        del text_df[args.text_field]
-        df = pd.merge(df, text_df, how='inner', on='message_id')
-        del text_df
+            if len(args.countries)>0:
+                geo_df = geo_df[geo_df['iso'].isin([elem.upper() for elem in args.countries])].reset_index(drop=True)
 
-    df['date'] = date
-    dtindex = pd.DatetimeIndex(df['date'])
-    df['day'] = dtindex.day
-    df['month'] = dtindex.month
-    df['year'] = dtindex.year
-    del df['date']
+            if args.subset_usernames_file != '':
+                geo_df = geo_df[geo_df['user_id'].isin(args.usernames)].reset_index(drop=True)
 
-    for var in args.geo_vars:
-        df[var].fillna(0, inplace=True)
+            df = pd.merge(text_df, geo_df, how='inner', on='message_id')
+            df = pd.merge(df, sent_df, how='inner', on='message_id')
+            del text_df, geo_df, sent_df
 
-    return df
+            if len(args.keywords) > 0 or args.lang_level:
+                if len(args.incl_keywords)>0:
+                    df = df[df['text'].notnull()].reset_index(drop=True)
+                    regex = '|'.join(args.incl_keywords)
+                    df['keep'] = [bool(re.search(regex, elem)) for elem in df['text'].values]
+                    df = df[df['keep']==True].reset_index(drop=True)
+                    del df['keep']
+                if len(args.excl_keywords)>0:
+                    df = df[df['text'].notnull()].reset_index(drop=True)
+                    regex = '|'.join(args.excl_keywords)
+                    df['drop'] = [bool(re.search(regex, elem)) for elem in df['text'].values]
+                    df = df[df['drop']==False].reset_index(drop=True)
+                    del df['drop']
+            del df['text']
 
-def groupby_to_ind(df, args):
-    df = df.groupby(['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
-    df = pd.DataFrame({
-        'count': df['message_id'].count(),
-        'score': df['score'].mean(),
-    }).reset_index()
-    return df
+
+        except:
+            print("\nNo data for {}_{}_{}_{}".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2))
+            df = pd.DataFrame({
+                'message_id': pd.Series([], dtype='str'),
+                'lang': pd.Series([], dtype='str'),
+                'user_id': pd.Series([], dtype='str'),
+                'objectid': pd.Series([], dtype='int'),
+                'id_0': pd.Series([], dtype='int'),
+                'iso': pd.Series([], dtype='str'),
+                'id_1': pd.Series([], dtype='int'),
+                'id_2': pd.Series([], dtype='int'),
+                'score': pd.Series([], dtype='float')
+            })
+
+        df['date'] = date
+        dtindex = pd.DatetimeIndex(df['date'])
+        df['day'] = dtindex.day
+        df['month'] = dtindex.month
+        df['year'] = dtindex.year
+        del df['date']
+
+        for var in args.geo_vars:
+            df[var].fillna(0, inplace=True)
+
+        df = df[['message_id', 'lang', 'user_id', 'score']+args.geo_vars+args.time_vars]
+
+        df_day = pd.concat([df_day, df]).reset_index(drop=True)
+
+    return df_day
 
 def weighted_groupby(df, args, ind_level=True, prefix=""):
     if ind_level:
-        vars = ['sender_id']+args.time_vars+args.geo_vars+args.other_gb_vars
+        vars = ['user_id']+args.time_vars+args.geo_vars+args.other_gb_vars
     else:
         vars = args.time_vars+args.geo_vars+args.other_gb_vars
     df = df.groupby(vars)
@@ -164,7 +166,7 @@ def quantiles_groupby(df, args, prefix=""):
     vars = args.time_vars+args.geo_vars+args.other_gb_vars
     df = df.groupby(vars)
     df = pd.DataFrame({
-        prefix+'count': df['sender_id'].count(),
+        prefix+'count': df['user_id'].count(),
         prefix+'score': df['score'].mean(),
         prefix+'score_10q': df['score'].quantile(0.1),
         prefix+'score_25q': df['score'].quantile(0.25),
@@ -186,6 +188,16 @@ def aggregate_sentiment(df, args):
         df = pd.merge(df, by_robust_ind, how='left', on=args.time_vars+args.geo_vars+args.other_gb_vars)
         return df
 
+def last_day(i, args):
+    if args.time_level=='day':
+        return True
+    elif args.time_level=='month':
+        return i.month == (i+datetime.timedelta(days=1)).month
+    elif args.time_level=='year':
+        return i.year == (i+datetime.timedelta(days=1)).year
+    elif args.time_level=='all':
+        return i == args.end_date
+
 def save_df(df, args):
 
     df.to_csv('data/aggregate_sentiment/{}.tsv'.format(
@@ -197,16 +209,6 @@ def save_df(df, args):
     f.write('Run with the following options:\n{}'.format(args))
     f.close()
 
-def last_day(i, args):
-    if args.time_level=='day':
-        return True
-    elif args.time_level=='month':
-        return i.month == (i+datetime.timedelta(days=1)).month
-    elif args.time_level=='year':
-        return i.year == (i+datetime.timedelta(days=1)).year
-    elif args.time_level=='all':
-        return i == args.end_date
-
 def run_aggregation(args):
 
     args = check_args(args)
@@ -214,11 +216,17 @@ def run_aggregation(args):
     df = pd.DataFrame()
     ind_df = pd.DataFrame()
     dates = get_dates(args)
-    for i in tqdm(dates):
-        temp = get_data(i, args)
-        temp = groupby_to_ind(temp, args)
+    for date in dates:
+        temp = get_daily_data(date, args)
+        temp = temp.groupby(['user_id']+args.time_vars+args.geo_vars+args.other_gb_vars)
+        temp = pd.DataFrame({
+            'count': temp['message_id'].count(),
+            'score': temp['score'].mean(),
+        }).reset_index()
+
         ind_df = weighted_groupby(pd.concat([ind_df, temp], axis=0), args)
-        if last_day(i, args) or i==dates[-1]:
+
+        if last_day(date, args) or date==dates[-1]:
             ind_df = aggregate_sentiment(ind_df, args)
             df = pd.concat([df, ind_df], axis=0)
             save_df(df, args)

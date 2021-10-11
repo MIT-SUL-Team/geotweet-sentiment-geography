@@ -4,7 +4,6 @@ import glob
 import os
 import pyarrow as pa
 import numpy as np
-from tqdm.auto import tqdm
 import argparse
 
 from utils.data_read_in import read_in
@@ -33,7 +32,7 @@ if __name__ == '__main__':
 
     nb_batches = int(np.ceil(len(all_files)/args.batch_size))
 
-    for i in tqdm(range(nb_batches)):
+    for i in range(nb_batches):
 
         file_batch = all_files[i*args.batch_size:(i+1)*args.batch_size]
 

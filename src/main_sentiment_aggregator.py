@@ -13,6 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('--countries', nargs='*', default='', help='Country abbreviations (3 letter)')
     parser.add_argument('--text_path', default='', type=str, help='path to tweet text data')
     parser.add_argument('--geo_path', default='', type=str, help='path to tweet geography data')
+    parser.add_argument('--sent_path', default='', type=str, help='path to tweet sentiment data')
     parser.add_argument('--sentiment_method', default='bert', help='Which sentiment imputation method?')
     parser.add_argument('--geo_level', default='admin1', type=str, help='level of geo granularity')
     parser.add_argument('--time_level', default='day', type=str, help='level of time granularity')
@@ -24,7 +25,6 @@ if __name__ == '__main__':
     parser.add_argument('--incl_keywords', nargs='*', default='', help='Which keywords do you want to include in the subset?')
     parser.add_argument('--excl_keywords', nargs='*', default='', help='Which keywords do you want to exclude in the subset?')
     parser.add_argument('--subset_usernames_file', default='', help='Would you like to subset to a list of usernames?')
-    parser.add_argument('--text_field', default='text_keywords', help='Which text field to use for keyword matching?')
     parser.add_argument('--name_ext', default='', type=str, help='File name extension')
     args = parser.parse_args()
 
