@@ -1,4 +1,4 @@
-#usage: python3 src/main_sentiment_aggregator.py twitter --country USA --tweet_text_path /home/sentiment/data-lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
+#usage: python src/main_sentiment_aggregator.py twitter --countries USA --tweet_text_path /home/sentiment/data-lake/twitter/processed/ --tweet_geo_path /home/sentiment/data-lake/twitter/geoinfo/
 
 import pandas as pd
 import numpy as np

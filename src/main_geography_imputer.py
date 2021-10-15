@@ -1,3 +1,5 @@
+# usage: python src/main_geography_imputer.py --port_number 9036
+
 import pandas as pd
 from pymapd import connect
 import glob

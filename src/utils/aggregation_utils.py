@@ -120,7 +120,7 @@ def get_daily_data(date, args):
 
 
         except:
-            print("\nNo data for {}_{}_{}_{}".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2))
+            print("\nNo data for {}_{}_{}_{}".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)))
             df = pd.DataFrame({
                 'message_id': pd.Series([], dtype='str'),
                 'lang': pd.Series([], dtype='str'),
