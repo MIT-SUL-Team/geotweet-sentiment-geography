@@ -76,20 +76,39 @@ def get_daily_data(date, args):
 
         try:
 
-            text_df = read_in(
-                file = "{}_{}_{}_{}.csv.gz".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)),
-                path = args.text_path,
-                cols = ["message_id", "user_id", "tweet_lang", "text"]
-            )
+            try:
 
-            geo_df = pd.read_csv(os.path.join(args.geo_path, 'geography_{}_{}_{}_{}.csv.gz'.format(
-                date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
-            )), sep='\t', usecols = ['message_id', 'ID_0', 'ISO', 'ID_1', 'ID_2'])
-            geo_df.columns = [elem.lower() for elem in list(geo_df)]
+                text_df = read_in(
+                    file = "{}_{}_{}_{}.csv.gz".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)),
+                    path = args.text_path,
+                    cols = ["message_id", "user_id", "tweet_lang", "text"]
+                )
 
-            sent_df = pd.read_csv(os.path.join(args.sent_path, '{}_sentiment_{}_{}_{}_{}.csv.gz'.format(
-                args.sentiment_method, date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
-            )), sep='\t')
+                geo_df = pd.read_csv(os.path.join(args.geo_path, 'geography_{}_{}_{}_{}.csv.gz'.format(
+                    date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+                )), sep='\t', usecols = ['message_id', 'ID_0', 'ISO', 'ID_1', 'ID_2'])
+                geo_df.columns = [elem.lower() for elem in list(geo_df)]
+
+                sent_df = pd.read_csv(os.path.join(args.sent_path, '{}_sentiment_{}_{}_{}_{}.csv.gz'.format(
+                    args.sentiment_method, date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+                )), sep='\t')
+
+            except: # Account for folder structure with years
+
+                text_df = read_in(
+                    file = "{}_{}_{}_{}.csv.gz".format(date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)),
+                    path = os.path.join(args.text_path, date.year),
+                    cols = ["message_id", "user_id", "tweet_lang", "text"]
+                )
+
+                geo_df = pd.read_csv(os.path.join(args.geo_path, date.year, 'geography_{}_{}_{}_{}.csv.gz'.format(
+                    date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+                )), sep='\t', usecols = ['message_id', 'ID_0', 'ISO', 'ID_1', 'ID_2'])
+                geo_df.columns = [elem.lower() for elem in list(geo_df)]
+
+                sent_df = pd.read_csv(os.path.join(args.sent_path, date.year, '{}_sentiment_{}_{}_{}_{}.csv.gz'.format(
+                    args.sentiment_method, date.year, date.month, str(date.day).zfill(2), str(i).zfill(2)
+                )), sep='\t')
 
             sent_df = sent_df[sent_df['score'].notnull()].reset_index(drop=True)
 
