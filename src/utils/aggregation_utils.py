@@ -16,15 +16,21 @@ def check_args(args):
     if len(args.name_ext)>0 and args.name_ext[0]!='_':
         args.name_ext = "_" + args.name_ext
 
+    if args.geo_level=='country':
+        args.geo_level='id_0'
     if args.geo_level=='admin1' or args.geo_level=='admin1_id':
         args.geo_level='id_1'
     if args.geo_level=='admin2' or args.geo_level=='admin2_id':
         args.geo_level='id_2'
-    geo_vars = ['id_0', 'id_1', 'id_2']
+    geo_vars = ['global', 'id_0', 'id_1', 'id_2']
     if args.geo_level not in geo_vars:
         raise ValueError("Must provide a valid geo level \('id_0', 'admin1', or 'admin2'\)")
-    args.geo_vars = geo_vars[:geo_vars.index(args.geo_level)+1]
-    args.geo_level = "admin" + args.geo_level[-1]
+    args.geo_vars = geo_vars[1:geo_vars.index(args.geo_level)+1]
+    if args.geo_level != 'global':
+        if args.geo_level == 'id_0':
+            args.geo_level = 'country'
+        else:
+            args.geo_level = "admin" + args.geo_level[-1]
 
     if args.time_level not in ['day', 'month', 'year', 'all']:
         raise ValueError("Must provide a valid time level \('day', 'month', 'year', 'all'\)")
