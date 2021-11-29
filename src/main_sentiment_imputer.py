@@ -54,8 +54,15 @@ if __name__ == '__main__':
     if len(args.emb_methods):
         from utils.emb_sentiment_imputer import embedding_imputation
     if 'bert' in args.emb_methods:
-        args.emb_model = torch.load('models/emb.pkl')
-        args.clf_model = torch.load('models/clf.pkl')
+        if torch.cuda.is_available():
+            args.emb_model = torch.load('models/emb.pkl')
+            args.clf_model = torch.load('models/clf.pkl')
+        else:
+            print("WARNING: Running on CPU")
+            args.emb_model = torch.load('models/emb.pkl', map_location=torch.device('cpu'))
+            args.emb_model._target_device = torch.device(type='cpu')
+            args.clf_model = torch.load('models/clf.pkl', map_location=torch.device('cpu'))
+            args.clf_model._target_device = torch.device(type='cpu')
 
     if args.filename == '':
         args.files = sorted([os.path.basename(elem) for elem in glob.glob(os.path.join(args.data_path, "*"))])
