@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository imputes
+This repository imputes sentiment scores to Twitter data based on semantic analysis of the post text.
 
 ## Requirements:
 
