@@ -74,7 +74,7 @@ def generate_daily_num_posts_df_year(year, geo_dir, sent_dir, out_dir):
         for day in range(1, days_in_month(month, year) + 1):
             data.append([year, month, day] + list(daily_num_posts_two_df(geo_path, "geography", sent_path, "bert_sentiment", year, month, day)))
     df = pd.DataFrame(data=data,    # values 
-             columns=["year", "month", "day", "num_geo_posts", "num_sent_posts", "num_common_posts"]) 
+             columns=["year", "month", "day", "num_geo_posts", "num_sent_posts", "num_common_posts"])
     df.to_csv(''.join([out_dir, "num_posts_summary_", str(year), ".csv"]))
 
 
@@ -102,5 +102,4 @@ def generate_daily_num_posts_graph_year(year, in_dir, out_dir):
 
     plt.title("".join(["Number of Posts by Day in ", str(year)]))
     plt.legend(bbox_to_anchor=(1.6, 1.0), loc='upper right')
-
     plt.savefig("".join([out_dir, "daily_num_posts_graph_", str(year)]), bbox_inches = 'tight')
