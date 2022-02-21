@@ -66,11 +66,10 @@ def generate_daily_num_posts_by_country_df_year(year, geo_dir, sent_dir, out_dir
     for month in range(1, 13):
         for day in range(1, days_in_month(month, year) + 1):
             print(year, month, day)
-            date_ = "-".join([str(year), str(month), str(day).zfill(2)])
-            data.append(pd.Series(date_, index=["date"]).append(
+            data.append(pd.Series([year, month, day], index=["year", "month", "day"]).append(
                 daily_num_posts_by_country(geo_path, "geography", sent_path, "bert_sentiment", year, month, day)))
-    df = pd.DataFrame(data=data).transpose().fillna(0)
-    df.rename(columns=df.iloc[0], inplace=True)
-    df.drop(df.index[0], inplace=True)
-    df.astype(int)
+    df = pd.DataFrame(data=data).fillna(0).astype(int)
+    df = pd.melt(df, id_vars=["year", "month", "day"],
+                 value_vars=df.drop(columns=["year", "month", "day"]).columns.tolist())
+    df = df.rename(columns={"variable": "country", "value": "num_posts"})
     df.to_csv(''.join([out_dir, "num_posts_summary_by_country_", str(year), ".csv"]))
