@@ -83,6 +83,8 @@ def generate_daily_num_posts_graph_year(year, in_dir, out_dir):
     @param year: int, year
     @param in_dir: str, directory to which num_post_summary csv files are stored
     @param out_dir: str, directory to which the graph will be stored
+
+    @return: file name
     """
     def get_date_list(year):
         base = date(year, 1, 1)
@@ -103,3 +105,4 @@ def generate_daily_num_posts_graph_year(year, in_dir, out_dir):
     plt.title("".join(["Number of Posts by Day in ", str(year)]))
     plt.legend(bbox_to_anchor=(1.6, 1.0), loc='upper right')
     plt.savefig("".join([out_dir, "daily_num_posts_graph_", str(year)]), bbox_inches = 'tight')
+    return "".join([out_dir, "daily_num_posts_graph_", str(year)])
