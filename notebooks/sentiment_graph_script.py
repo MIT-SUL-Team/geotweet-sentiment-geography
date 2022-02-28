@@ -119,13 +119,13 @@ def generate_daily_sentiment_avg_and_num_posts_by_month_csv(cities, year, month,
     sentiment_avg_by_month_df = sentiment_avg_df.T
     sentiment_avg_by_month_df.rename(columns=sentiment_avg_by_month_df.iloc[0], inplace=True)
     sentiment_avg_by_month_df.drop(sentiment_avg_by_month_df.index[0], inplace=True)
-    display(sentiment_avg_by_month_df)
+    # display(sentiment_avg_by_month_df)
     sentiment_avg_by_month_df.to_csv("".join([out_dir, city_group, "_sentiment_avg_", str(year),"_", str(month).zfill(2), ".csv"]))
     
     num_post_by_month_df = num_post_df.T
     num_post_by_month_df.rename(columns=num_post_by_month_df.iloc[0], inplace=True)
     num_post_by_month_df.drop(num_post_by_month_df.index[0], inplace=True)
-    display(num_post_by_month_df)
+    # display(num_post_by_month_df)
     num_post_by_month_df.to_csv("".join([out_dir, city_group, "_num_posts_", str(year),"_", str(month).zfill(2), ".csv"]))
     
     

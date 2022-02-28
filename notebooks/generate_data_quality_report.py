@@ -17,7 +17,7 @@ def generate_report(start_date, end_date, in_dir, pipeline_dir, out_dir, interna
     """
 
     # TODO:
-    # 1) configure methods to accept dates as parameters
+    # 
     # 2) create fake pdf (figure out pdf technology)
     # 3) incorporate methods into generate_report, run for one month
     # 4) run for whole history
