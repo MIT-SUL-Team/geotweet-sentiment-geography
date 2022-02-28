@@ -4,6 +4,8 @@ from sentiment_graph_script import *
 from fpdf import FPDF
 import datetime
 
+# TODO: set default for parameters
+
 def generate_report_files(start_year, end_year, geo_dir, sent_dir, in_dir, pipeline_dir, out_dir, cities, city_group, internal=False):
     """
     :param start_year: int, Ex. 2021

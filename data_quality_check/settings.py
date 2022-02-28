@@ -4,6 +4,8 @@
 # @Date       : 2022-02-25 16:41
 # @Description:
 
-DIR_SENTIMENT = ""
-DIR_GEOGRAPHY = ""
-DIR_OUTPUT = ""
+DIR_SENTIMENT = "/srv/data/twitter_sentiment/"
+DIR_GEOGRAPHY = "/srv/data/twitter_geography/"
+DIR_STORE = "./store/"
+DIR_OUTPUT = "./output"
+
