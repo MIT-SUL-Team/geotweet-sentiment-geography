@@ -1,89 +1,81 @@
 # -*- coding: utf-8 -*-
 # @File       : func_plotting.py
-# @Author     : Yuchen Chai
+# @Author     : Yuchen Chai, Sirena Yu
 # @Date       : 2022-02-25 16:34
 # @Description:
 
 import numpy as np
 import pandas as pd
-from util import months_in_between, days_in_month, leap_year
+from util import months_in_between, days_in_month, get_date_list
 from settings import *
 import matplotlib.pyplot as plt
-from datetime import date, timedelta
+from datetime import timedelta
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
 
-def generate_daily_num_posts_graph_year(year, in_dir, out_dir):
+def generate_daily_num_posts_graph_year(year, area_level=None, area=None):
     """
     @param year: int, year
-    @param in_dir: str, directory to which num_post_summary csv files are stored
-    @param out_dir: str, directory to which the graph will be stored
-
+    @param area_level: str, "country", "state" or "city"
+    @param area: str, the area that we want to look at
     @return: file name
     """
 
-    def get_date_list(year):
-        base = date(year, 1, 1)
-        numdays = 365 + int(leap_year(year)) * 1
-        return [base + timedelta(days=x) for x in range(numdays)]
-
-    df = pd.read_csv("".join([in_dir, "num_posts_summary_", str(year), ".csv"]))
+    df = pd.read_csv("".join([DIR_STORE, "num_posts_and_sentiment_summary_", str(year), ".csv"]))
 
     x = get_date_list(year)
-    y_geo = df['num_geo_posts']
-    y_sent = df['num_sent_posts']
-    y_common = df['num_common_posts']
 
-    plt.plot(x, y_geo, color='silver', label="Geotagged Posts")
-    plt.plot(x, y_sent, color='grey', label="Posts with Sentiment Scores")
-    plt.plot(x, y_common, color='green', label="Common Posts")
+    if area_level is None:
+        summed_df = df.groupby(["year", "month", "day"]).sum()
+        summed_df.reset_index(inplace=True)
+        y = summed_df["num_posts"]
+    else:
+        area_summed_df = df.groupby(["year", "month", "day", area_level]).sum()
+        area_summed_df.reset_index(inplace=True)
+        y = area_summed_df[area_summed_df[area_level] == area].reset_index()["num_posts"]
 
-    plt.title("".join(["Number of Posts by Day in ", str(year)]))
-    plt.legend(bbox_to_anchor=(1.6, 1.0), loc='upper right')
-    plt.savefig("".join([out_dir, "daily_num_posts_graph_", str(year)]), bbox_inches='tight')
-    return "".join([out_dir, "daily_num_posts_graph_", str(year)])
+    plt.plot(x, y, color='green', label="Common Posts")
+
+    plt.title("".join(["Number of Posts by Day in ", area, ", ", str(year)]))
+    plt.savefig("".join([DIR_STORE, "daily_num_posts_graph_", str(year)]), bbox_inches='tight')
+    return "".join([DIR_STORE, "daily_num_posts_graph_", str(year)])
 
 
-def generate_daily_sentiment_graph(start_date, end_date, city_group, in_dir, out_dir, remove_corrupted_data=True,
-                                   corrupt_data_dir=None):
+def generate_daily_sentiment_graph(year, area_level=None, area=None):
     """
-    @param start_date: datetime object
-    @param end_date: datetime object
-    @param city_group: str, used for searching for corresponding city_group csv files
-    @param in_dir: directory under which the sentiment score / num post by month csv files are stored
-    @param out_dir: directory to which the daily sentiment graphs will be stored
-    @param remove_corrupted_data: boolean, True if we want to remove corrupted data points, False if not
-    @param corrupt_data_dir: directory under which the corrupt data is
+
 
     Generates sentiment average graphs from cities in city_group from the month of start_date to the month of end_date
     and save it to out_dir
     """
+
+    df = pd.read_csv("".join([DIR_STORE, "num_posts_and_sentiment_summary_", str(year), ".csv"]))
+    df["daily_total_score"] = df["num_posts"] * df["daily_avg_score"]
+
+    x = get_date_list()
+
+    if area_level is None:
+        summed_df = df.groupby(["year", "month", "day"]).sum()
+        summed_df.reset_index(inplace=True)
+        summed_df["daily_avg_score"] = summed_df["daily_total_score"] / summed_df["num_posts"]
+        summed_df.loc[~np.isfinite(summed_df['daily_avg_score']), 'daily_avg_score'] = np.nan
+        y = summed_df["daily_avg_score"]
+    else:
+        area_summed_df = df.groupby(["year", "month", "day", area_level]).sum()
+        area_summed_df.reset_index(inplace=True)
+        area_summed_df["daily_avg_score"] = area_summed_df["daily_total_score"] / area_summed_df["num_posts"]
+        area_summed_df.loc[~np.isfinite(area_summed_df['daily_avg_score']), 'daily_avg_score'] = np.nan
+        y = area_summed_df["daily_avg_score"]
+
     # generating a dataframe that covers all months between start date and end date
-    all_df = None
 
-    months = months_in_between(start_date, end_date)
-    for month in months:
-        try:
-            month_df = pd.read_csv("".join([in_dir, city_group, "_sentiment_avg_", month, ".csv"]))
-        except FileNotFoundError:
-            raise Exception("".join(["csv file for ", month, " in ", city_group, " does not exist"]))
-        month_df = month_df.rename(columns={"Unnamed: 0": "date"})
-        if all_df is None:
-            all_df = month_df
-        else:
-            all_df = pd.concat([all_df, month_df], ignore_index=True)
 
-    cities = list(all_df.columns)
-    cities.remove("date")
 
-    # remove corrupted data points
-    if remove_corrupted_data:
-        if corrupt_data_dir is None:
-            raise Exception("Need to provide corrupt data directory as input.")
-        corrupted_dates = get_corrupted_dates(start_date, end_date, corrupt_data_dir)
-        for city in cities:
-            all_df[city] = np.where(all_df['date'].isin(corrupted_dates), np.nan, all_df[city])
+
+    corrupted_dates = get_corrupted_dates(year)
+    for city in cities:
+        all_df[city] = np.where(all_df['date'].isin(corrupted_dates), np.nan, all_df[city])
 
     for city in cities:
         base = datetime(start_date.year, start_date.month, 1)
@@ -103,3 +95,33 @@ def generate_daily_sentiment_graph(start_date, end_date, city_group, in_dir, out
         plt.show()
         plt.savefig("".join([out_dir, city, "_daily_sentiment_", months[0], "_to_", months[len(months) - 1], ".png"]),
                     bbox_inches='tight')
+
+
+def get_corrupted_dates(year):
+    """
+    @param year: int or str, desired year
+
+    returns: corrupted dates in between the start and the end as a list
+    """
+
+    def get_date(file_name, category):
+        if category == "geography":
+            return "_".join(file_name.split("/")[5].split(".")[0].split("_")[1:4])
+        else:
+            return "_".join(file_name.split("/")[5].split(".")[0].split("_")[2:5])
+
+    corrupted_dates = set()
+
+    try:
+        corrupted_files = pd.read_csv("".join([DIR_STORE, "corrupted_files_", str(year), ".csv"]))
+    except FileNotFoundError:
+        raise Exception("".join(["Corrupted file report for ", year, " does not exist"]))
+
+    corrupted_files.drop(columns="Unnamed: 0", inplace=True)
+
+    corrupted_files['dates'] = corrupted_files['corrupted_files'].apply(lambda x: get_date(x))
+
+    corrupted_dates = corrupted_files['dates'].unique()
+
+
+    return corrupted_dates
