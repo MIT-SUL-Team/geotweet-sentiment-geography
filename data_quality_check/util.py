@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, date
 
 def months_in_between(start, end):
     """
@@ -22,6 +22,7 @@ def leap_year(year):
         return True
     return False
 
+
 def days_in_month(month, year):
     if month in {1, 3, 5, 7, 8, 10, 12}:
         return 31
@@ -31,5 +32,16 @@ def days_in_month(month, year):
         return 28
     return 30
 
+
 def hours_in_day():
     return [str(num).zfill(2) for num in range(0, 24)]
+
+
+def get_date_list(year):
+    base = date(year, 1, 1)
+    numdays = 365 + int(leap_year(year)) * 1
+    return [base + timedelta(days=x) for x in range(numdays)]
+
+
+
+
