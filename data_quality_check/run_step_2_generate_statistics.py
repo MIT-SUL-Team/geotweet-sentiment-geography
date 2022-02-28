@@ -6,10 +6,16 @@
 
 from func_statistics import iterate_files
 import sys
+import argparse
 
 # Step 1: Number of post statistics / sentiment trend
-PARAMETER_YEAR = sys.argv[1]
-print(sys.argv[1])
+parser = argparse.ArgumentParser()
+parser.add_argument('--year',
+                    default=None,
+                    help='Would you like to look at data from a specific year? If so, enter the year.')
+
+args = parser.parse_args()
+PARAMETER_YEAR = vars(args)['year']
 iterate_files(PARAMETER_YEAR)
 
 # Step 2: Missing files

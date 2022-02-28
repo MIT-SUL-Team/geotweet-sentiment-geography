@@ -126,7 +126,7 @@ def generate_statistic_year(year):
     empty_files = []
     result_df = pd.DataFrame()
     file_name_to_num_post = dict()
-    for month in range(1, 2):
+    for month in range(1, 13):
         for day in range(1, days_in_month(month, year)+1):
             day_df, day_missing_files, day_empty_files, day_file_name_to_num_post = \
                 get_daily_num_post_and_sentiment_and_missing_file(year, month, day)
