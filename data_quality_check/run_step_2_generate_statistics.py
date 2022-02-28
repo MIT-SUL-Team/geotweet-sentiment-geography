@@ -5,9 +5,11 @@
 # @Description:
 
 from func_statistics import iterate_files
+import sys
 
 # Step 1: Number of post statistics / sentiment trend
-PARAMETER_YEAR = None
+PARAMETER_YEAR = sys.argv[1]
+print(sys.argv[1])
 iterate_files(PARAMETER_YEAR)
 
 # Step 2: Missing files

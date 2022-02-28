@@ -26,6 +26,7 @@ def get_daily_num_post_and_sentiment_and_missing_file(year, month, day):
     3) empty_files: a list of str, files names that are empty
     4) file_name_to_num_post: dict, maps file names to number of posts in that file
     """
+    print(year, month, day)
     date = "".join([str(year), "_", str(month), "_", str(day).zfill(2)])
     result_df = None  # sentiment score and num post dataframe
 
@@ -97,7 +98,9 @@ def get_daily_num_post_and_sentiment_and_missing_file(year, month, day):
     column_names = ["year", "month", "day", "country", "state", "city", "num_posts", "daily_avg_score"]
 
     if result_df is None:
-        result_df = pd.DataFrame(columns=column_names)
+        data = np.array([[year, month, day, "World", "World", "World",  0, np.nan]])
+        result_df = pd.DataFrame(data=data,
+                                 columns=column_names)
     else:
         result_df["year"] = [year] * len(result_df)
         result_df["month"] = [month] * len(result_df)
@@ -123,7 +126,7 @@ def generate_statistic_year(year):
     empty_files = []
     result_df = pd.DataFrame()
     file_name_to_num_post = dict()
-    for month in range(1, 13):
+    for month in range(1, 2):
         for day in range(1, days_in_month(month, year)+1):
             day_df, day_missing_files, day_empty_files, day_file_name_to_num_post = \
                 get_daily_num_post_and_sentiment_and_missing_file(year, month, day)
@@ -157,4 +160,5 @@ def iterate_files(p_year=None):
         for year in file_list:
             generate_statistic_year(year)
     else:
+        print("iterate files", p_year)
         generate_statistic_year(p_year)
