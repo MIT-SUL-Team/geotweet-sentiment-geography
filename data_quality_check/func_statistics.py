@@ -150,7 +150,7 @@ def generate_statistic_year(year):
     empty_files_df = pd.DataFrame(data=pd.Series(empty_files),
                                     columns=["empty_files"])
     empty_files_df.to_csv(''.join([DIR_STORE, "empty_files_", str(year), ".csv"]))
-    corrupted_files_df = pd.DataFrame(data=pd.Series(empty_files),
+    corrupted_files_df = pd.DataFrame(data=pd.Series(corrupted_files),
                                   columns=["corrupted_files"])
     corrupted_files_df.to_csv(''.join([DIR_STORE, "corrupted_files_", str(year), ".csv"]))
 

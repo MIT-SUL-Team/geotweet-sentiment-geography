@@ -7,5 +7,5 @@
 DIR_SENTIMENT = "/srv/data/twitter_sentiment/"
 DIR_GEOGRAPHY = "/srv/data/twitter_geography/"
 DIR_STORE = "./store/"
-DIR_OUTPUT = "./output"
+DIR_OUTPUT = "./output/"
 

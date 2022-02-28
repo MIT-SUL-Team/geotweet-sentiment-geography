@@ -4,10 +4,14 @@
 # @Date       : 2022-02-25 16:38
 # @Description:
 
-from data_quality_check.func_plotting import generate_daily_num_posts_graph_year
+import sys
+from func_plotting import iterate_plotting
 
-PARAMETER_YEAR = None
+PARAMETER_YEAR = sys.argv[1]
+print(PARAMETER_YEAR)
 
-# Step 1: generate number of post trend
+PARAMETER_AREA_LEVEL = sys.argv[2]
 
-# Step 2: generate sentiment trend
+PARAMETER_AREA = sys.argv[3]
+
+iterate_plotting(PARAMETER_YEAR, PARAMETER_AREA_LEVEL, PARAMETER_AREA)
