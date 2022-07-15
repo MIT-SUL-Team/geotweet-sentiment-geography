@@ -61,3 +61,4 @@ python src/main_sentiment_imputer.py --data_path /n/holyscratch01/cga/nicogj/mai
 ```
 python src/main_sentiment_aggregator.py twitter --geo_level global --text_path /n/cga/data/geo-tweets/cga-sbg/ --geo_path /n/cga/data/geo-tweets/cga-sbg-geography/ --sent_path /n/cga/data/geo-tweets/cga-sbg-sentiment/ --start_date 2016-01-01 --end_date 2019-12-31 --name_ext global_index
 ```
+### hahaa
